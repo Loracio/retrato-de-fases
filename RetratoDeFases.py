@@ -18,7 +18,7 @@ class RetratoDeFases2D:
         self.L = LongitudMalla              # Número de puntos por eje para representar el diagrama (habrá L² puntos)
 
         # Variables no obligatorias
-        self.Densidad = Densidad            # Controla la cercanía de las líneas de flujo. Alterar este parámetro varía considerablemente el tiempo de computación
+        self.Densidad = Densidad            # [RetratoDeFases.py](RetratoDeFases.py)
         self.Polar = Polar                  # Si se pasan las coordenadas en polares, marcar como True.
         self.Titulo = Titulo                # Titulo para el retrato de fases.
         self.xlabel = xlabel                # Titulo en eje X
@@ -37,7 +37,8 @@ class RetratoDeFases2D:
 
 
     def plot(self):
-        plt.streamplot(self._X, self._Y, self._dX, self._dY, color='b', linewidth=0.5, density= self.Densidad)
+        colorines = (self._dX**2+self._dY**2)**(0.5)
+        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1, density= self.Densidad)
         plt.axis('square')
         plt.axis([-self.Rango, self.Rango, -self.Rango, self.Rango])
         plt.title(f'{self.Titulo}')
@@ -45,6 +46,3 @@ class RetratoDeFases2D:
         plt.ylabel(f'{self.ylabel}')
         plt.grid()
         plt.show()
-
-        
-
