@@ -26,7 +26,7 @@ class RetratoDeFases2D:
 
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
-        self._X, self._Y = np.meshgrid(np.linspace(-self.Rango, self.Rango, self.L), np.linspace(-self.Rango, self.Rango, self.L))   #Crea una malla de tamaño L²
+        self._X, self._Y = np.meshgrid(np.linspace(self.Rango[0], self.Rango[1], self.L), np.linspace(self.Rango[0], self.Rango[1], self.L))   #Crea una malla de tamaño L²
 
         if Polar:   
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
@@ -36,13 +36,43 @@ class RetratoDeFases2D:
             self._dX, self._dY = self.dF(self._X, self._Y) # Calcula el campo de velocidades en cada uno de los puntos de la malla
 
 
-    def plot(self):
+    def plot(self,mode="unico",tiempo=1, label=None):
+        '''Puede ser "unico" o "continuo".
+        Es útil cuando se estudia una bifurcación'''
+        
+       #if mode=="unico":
+       #    colorines = (self._dX**2+self._dY**2)**(0.5)
+       #    plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1.5, density= self.Densidad)
+       #    plt.axis('square')
+       #    plt.axis([self.Rango[0], self.Rango[1], self.Rango[0], self.Rango[1]])
+       #    plt.title(f'{self.Titulo}')
+       #    plt.xlabel(f'{self.xlabel}')
+       #    plt.ylabel(f'{self.ylabel}')
+       #    plt.grid()
+       #    plt.show()
+       #if mode=="continuo":
+       #    colorines = (self._dX**2+self._dY**2)**(0.5)
+       #    plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1.5, density= self.Densidad)
+       #    plt.pause(1)
+        plt.clf()
         colorines = (self._dX**2+self._dY**2)**(0.5)
-        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1, density= self.Densidad)
+        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1.5, density= self.Densidad)
         plt.axis('square')
-        plt.axis([-self.Rango, self.Rango, -self.Rango, self.Rango])
-        plt.title(f'{self.Titulo}')
+        plt.axis([self.Rango[0], self.Rango[1], self.Rango[0], self.Rango[1]])
+        if label==None:
+            plt.title(f'{self.Titulo}')
+        else:
+            plt.title(f'{self.Titulo}, r = {label:.2f}')
         plt.xlabel(f'{self.xlabel}')
         plt.ylabel(f'{self.ylabel}')
         plt.grid()
-        plt.show()
+
+        if mode=="unico":
+            plt.show()
+        
+        if mode=="continuo":
+            if label==None:
+                plt.title(f'{self.Titulo}')
+            else:
+                plt.title(f'{self.Titulo}, r = {label:.2f}')
+            plt.pause(tiempo)

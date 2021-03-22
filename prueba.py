@@ -1,10 +1,16 @@
 import RetratoDeFases as ph
+import numpy as np
 
-
-w = 1.0 #Frecuencia angular del oscilador
+a = 1
+b = 1
+c = 1
 
 def dF(x, y):
-    return y, -w*w*x
+    _X = a*x+x**3-x**5
+    _Y = b+c*x**2
+    return _X, _Y
 
-RetratoOscilador = ph.RetratoDeFases2D(dF, 5, 50)
-RetratoOscilador.plot()
+for i in np.linspace(-0.5,0.5,20):
+    a=i
+    Retrato = ph.RetratoDeFases2D(dF,RangoRepresentacion = [-2,2], LongitudMalla = 80, Polar=True)
+    Retrato.plot(mode="continuo",tiempo=0.2,label=a)
