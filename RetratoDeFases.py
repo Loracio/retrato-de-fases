@@ -1,5 +1,6 @@
 from inspect import signature
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -61,8 +62,11 @@ class RetratoDeFases2D:
 
 
     def plot(self, *, color=None, linewidth=1):
-        colorines = (self._dX**2+self._dY**2)**(0.5)
-        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1, density= self.Densidad)
+        colores = (self._dX**2+self._dY**2)**(0.5)
+        colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
+        if not color:
+            color = 'rainbow'
+        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
         plt.axis('square')
         plt.axis([self.Rango[0,0], self.Rango[0,1], self.Rango[1,0], self.Rango[1,1],])
         plt.title(f'{self.Titulo}')
