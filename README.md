@@ -8,6 +8,7 @@ El [código](#archivos) es abierto, todos podéis descargarlo y utilizarlo. Y ta
 
 ## Autores
 - Víctor Loras Herrero
+- Unai Lería Fortea
 
 ## Archivos
 - [RetratoDeFases.py](RetratoDeFases.py): Archivo que contiene las distintas clases para pintar retratos de fase.
