@@ -20,6 +20,9 @@ class dF_argsInvalid(RetratoExceptions):
     def __init__(self, dF_args):
         super().__init__(f"El objeto `dF_args={dF_args}` debe ser un diccionario, no {type(dF_args)}")
 
+class RangoInvalid(RetratoExceptions):
+    def __init__(self, text):
+        super().__init__(f"El rango no es válido: {text}")
 
 class RetratoDeFases2D:
     """
@@ -38,7 +41,7 @@ class RetratoDeFases2D:
         self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
         
         # Variables no obligatorias
-        self.L = int (LongitudMalla*abs(RangoRepresentacion[1]-RangoRepresentacion[0]))       # Número de puntos por eje para representar el diagrama (habrá L² puntos)
+        self.L = int (LongitudMalla*abs(self.Rango[0,0]-self.Rango[0,1]))       # Número de puntos por eje para representar el diagrama (habrá L² puntos)
         self.Densidad = Densidad                                                              # Controla la cercanía de las líneas de flujo
         self.Polar = Polar                                                                    # Si se pasan las coordenadas en polares, marcar como True.
         self.Titulo = Titulo                                                                  # Titulo para el retrato de fases.
@@ -47,7 +50,7 @@ class RetratoDeFases2D:
 
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
-        self._X, self._Y = np.meshgrid(np.linspace(self.Rango[0], self.Rango[1], self.L), np.linspace(self.Rango[0], self.Rango[1], self.L))   #Crea una malla de tamaño L²
+        self._X, self._Y = np.meshgrid(np.linspace(self.Rango[0,0], self.Rango[0,1], self.L), np.linspace(self.Rango[1,0], self.Rango[1,1], self.L))   #Crea una malla de tamaño L²
 
         if self.Polar:   
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
@@ -61,7 +64,7 @@ class RetratoDeFases2D:
         colorines = (self._dX**2+self._dY**2)**(0.5)
         plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1, density= self.Densidad)
         plt.axis('square')
-        plt.axis([self.Rango[0], self.Rango[1], self.Rango[0], self.Rango[1],])
+        plt.axis([self.Rango[0,0], self.Rango[0,1], self.Rango[1,0], self.Rango[1,1],])
         plt.title(f'{self.Titulo}')
         plt.xlabel(f'{self.xlabel}')
         plt.ylabel(f'{self.ylabel}')
@@ -82,6 +85,43 @@ class RetratoDeFases2D:
         if len(sig.parameters)<2 + len(self.dF_args):
             raise dFInvalid(sig, self.dF_args)
         self._dF = func
+
+    @property
+    def Rango(self):
+        return self._Rango
+
+    @Rango.setter
+    def Rango(self, value):
+        def is_number(x):
+            return isinstance(x, (float,int))
+        def is_range(U):
+            return isinstance(U, (list,tuple))
+
+        if is_number(value):
+            if value == 0:
+                raise RangoInvalid('0 no es un rango válido')
+            aux = [0,value]
+            aux.sort()
+            self._Rango = np.array([aux,aux])
+            return
+
+        if is_range(value):
+            a,b = value
+            if is_number(a) and is_number(b):
+                self._Rango = np.array([[a,b]]*2)
+                return
+
+            if is_range(a) and is_range(b):
+                try:
+                    aa, ab = a
+                    ba, bb = b
+                    if is_number(aa) and is_number(ab) and is_number(ba) and is_number(bb):
+                        self._Rango = np.array([[aa,ab],[ba, bb]])
+                except Exception:
+                    raise RangoInvalid('Error al convertir a rango tipo: [ [], [] ].')
+        else:
+            raise RangoInvalid(f"{value} no es un rango coherente")
+    
 
     @property
     def dF_args(self):
