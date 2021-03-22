@@ -184,4 +184,5 @@ Mkfile.old
 dkms.conf
 
 # vs code
+pruebas.py
 .vscode
