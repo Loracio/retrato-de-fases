@@ -12,7 +12,7 @@ El [código](#archivos) es abierto, todos podéis descargarlo y utilizarlo. Y ta
 
 ## Archivos
 - [RetratoDeFases.py](RetratoDeFases.py): Archivo que contiene las distintas clases para pintar retratos de fase.
-- [ejemplos.py](ejemplos.py): Ejemplos para ver cómo se utilizan las clases de [RetratoDeFases.py](RetratoDeFases.py)
+- [ejemplos.ipynb](ejemplos.ipynb): Ejemplos para ver cómo se utilizan las clases de [RetratoDeFases.py](RetratoDeFases.py)
 - [README.md](README.md): Es lo que estás leyendo ahora mismo.
 - [gitignore](.gitignore): sirve para decirle a Git qué archivos o directorios completos debe ignorar y no subir al repositorio de código. Como dice su nombre: ignóralo.
 
@@ -42,7 +42,7 @@ RetratoDeFases2D(dF, 5, 50, dF_args={'w':3.1415})
  
  Dentro de la propia clase, se realiza el cálculo de las líneas de flujo en el espacio de fases, para poder realizar un plot del espacio de fases.
  
- # Instrucciones para usar [ejemplos.py](ejemplos.py)
- **Se debe tener en la misma carpeta el archivo [RetratoDeFases.py](RetratoDeFases.py) para que funcione**. Únicamente ejecutar el programa, debería sacar distintas gráficas para los distintos sistemas ejemplo que hay en el archivo.
+ # Instrucciones para usar [ejemplos.ipynb](ejemplos.ipynb)
+ **Se debe tener en la misma carpeta el archivo [RetratoDeFases.py](RetratoDeFases.py) para que funcione**. Únicamente abir el notebook y ejecutar las celdas, debería sacar distintas gráficas para los distintos sistemas ejemplo que hay en el archivo.
  
  
