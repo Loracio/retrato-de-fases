@@ -55,8 +55,8 @@ class RetratoDeFases2D:
        #    plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1.5, density= self.Densidad)
        #    plt.pause(1)
         plt.clf()
-        colorines = (self._dX**2+self._dY**2)**(0.5)
-        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1.5, density= self.Densidad)
+        colorines = (self._dX**2+self._dY**2)
+        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1.5, density= self.Densidad, cmap='plasma')
         plt.axis('square')
         plt.axis([self.Rango[0], self.Rango[1], self.Rango[0], self.Rango[1]])
         if label==None:
