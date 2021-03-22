@@ -25,7 +25,7 @@ class RetratoDeFases2D:
     """
     Hace un retrato de fases de un sistema 2D.
     """
-    def __init__(self, dF, RangoRepresentacion, LongitudMalla, *, dF_args={}, Densidad = 1, PrimerCuadrante = False, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = r"$\dot{X}$"):
+    def __init__(self, dF, RangoRepresentacion, *, LongitudMalla=10, dF_args={}, Densidad = 1, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = r"$\dot{X}$"):
         """
         Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
         También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
@@ -33,25 +33,21 @@ class RetratoDeFases2D:
         """
 
         # Variables obligatorias
-        self.dF_args = dF_args              # Argumentos extras que haya que proporcionar a la función dF
-        self.dF = dF                        # Derivadas de las variables respecto al tiempo
-        self.Rango = RangoRepresentacion    # Rango de representación del diagrama
-        self.L = LongitudMalla              # Número de puntos por eje para representar el diagrama (habrá L² puntos)
-
+        self.dF_args = dF_args                           # Argumentos extras que haya que proporcionar a la función dF
+        self.dF = dF                                     # Derivadas de las variables respecto al tiempo
+        self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
+        
         # Variables no obligatorias
-        self.Densidad = Densidad                # Controla la cercanía de las líneas de flujo
-        self.PrimerCuadrante = PrimerCuadrante  # Indica si sólo se debe plotear el primer cuadrante
-        self.Polar = Polar                      # Si se pasan las coordenadas en polares, marcar como True.
-        self.Titulo = Titulo                    # Titulo para el retrato de fases.
-        self.xlabel = xlabel                    # Titulo en eje X
-        self.ylabel = ylabel                    # Titulo en eje Y
+        self.L = int (LongitudMalla*abs(RangoRepresentacion[1]-RangoRepresentacion[0]))       # Número de puntos por eje para representar el diagrama (habrá L² puntos)
+        self.Densidad = Densidad                                                              # Controla la cercanía de las líneas de flujo
+        self.Polar = Polar                                                                    # Si se pasan las coordenadas en polares, marcar como True.
+        self.Titulo = Titulo                                                                  # Titulo para el retrato de fases.
+        self.xlabel = xlabel                                                                  # Titulo en eje X
+        self.ylabel = ylabel                                                                  # Titulo en eje Y
 
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
-        if self.PrimerCuadrante:
-            self._X, self._Y = np.meshgrid(np.linspace(0, self.Rango, self.L), np.linspace(0, self.Rango, self.L))   #Crea una malla de tamaño L² empezando en el cero
-        else:
-            self._X, self._Y = np.meshgrid(np.linspace(-self.Rango, self.Rango, self.L), np.linspace(-self.Rango, self.Rango, self.L))   #Crea una malla de tamaño L²
+        self._X, self._Y = np.meshgrid(np.linspace(self.Rango[0], self.Rango[1], self.L), np.linspace(self.Rango[0], self.Rango[1], self.L))   #Crea una malla de tamaño L²
 
         if self.Polar:   
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
@@ -65,10 +61,7 @@ class RetratoDeFases2D:
         colorines = (self._dX**2+self._dY**2)**(0.5)
         plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colorines, linewidth=1, density= self.Densidad)
         plt.axis('square')
-        if self.PrimerCuadrante:
-            plt.axis([0, self.Rango, 0, self.Rango])
-        else:
-            plt.axis([-self.Rango, self.Rango, -self.Rango, self.Rango])
+        plt.axis([self.Rango[0], self.Rango[1], self.Rango[0], self.Rango[1],])
         plt.title(f'{self.Titulo}')
         plt.xlabel(f'{self.xlabel}')
         plt.ylabel(f'{self.ylabel}')
