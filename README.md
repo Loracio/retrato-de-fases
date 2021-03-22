@@ -23,7 +23,16 @@ La idea de esta clase, es pasarle una función que devuelva las expresiones para
 ```python
 def dF(x,y):
   return expresionX, expresionY
- ```
+```
+También se pueden pasar variables extras en forma de diccionario. Por ejemplo para un oscilador armónico de frecuencia `w` (con valor estandar 1):
+```python
+def dF(x,y, *, w=1):
+  return expresionX, expresionY
+```
+En este caso la llamada a la función debería incluir un diccionario con la variable `w` y su valor constante al kword `dF_args`:
+```python
+RetratoDeFases2D(dF, 5, 50, dF_args={'w':3.1415})
+```
  
  Además, se ha de pasar el rango sobre el cuál se quiere representar el retrato (se representa sobre una región cuadrada). Se debe expresar la densidad de puntos en el rango escogido, es decir, indicar la longitud de la malla sobre la cual se pinta el flujo.
  
