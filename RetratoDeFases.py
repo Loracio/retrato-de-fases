@@ -2,6 +2,7 @@ from inspect import signature
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 import numpy as np
 
 
@@ -42,7 +43,7 @@ class RetratoDeFases2D:
         self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
         
         # Variables no obligatorias
-        self.L = int (LongitudMalla*abs(self.Rango[0,0]-self.Rango[0,1]))       # Número de puntos por eje para representar el diagrama (habrá L² puntos)
+        self.L = int (LongitudMalla*abs(self.Rango[0,0]-self.Rango[0,1]))                     # Número de puntos por eje para representar el diagrama (habrá L² puntos)
         self.Densidad = Densidad                                                              # Controla la cercanía de las líneas de flujo
         self.Polar = Polar                                                                    # Si se pasan las coordenadas en polares, marcar como True.
         self.Titulo = Titulo                                                                  # Titulo para el retrato de fases.
@@ -55,25 +56,93 @@ class RetratoDeFases2D:
 
         if self.Polar:   
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
-            self._dR, self._dTheta = self.dF(self._R, self._Theta, *self.dF_args) # Calcula el campo de velocidades en cada uno de los puntos de la malla
-            self._dX, self._dY = self._dR*np.cos(self._Theta) - self._R*np.sin(self._Theta)*self._dTheta, self._dR*np.sin(self._Theta)+self._R*np.cos(self._Theta)*self._dTheta
+            self._transformacionPolares()
         else:
             self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args) # Calcula el campo de velocidades en cada uno de los puntos de la malla
 
 
-    def plot(self, *, color=None, linewidth=1):
+    def plot(self, *, color='rainbow', linewidth=1, parametro=None):
+        
+        if parametro:
+
+            #TODO: comprobar que el parametro está en dF_args
+
+            #TODO: pasar como argumento los limites de la barra y el salto entre cada valor (valstep)
+
+            self._variable_plot(parametro, color=color)
+
+        else:
+            self._standard_plot(color, linewidth)
+
+        
+
+    def _standard_plot(self, color, linewidth):
         colores = (self._dX**2+self._dY**2)**(0.5)
         colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
-        if not color:
-            color = 'rainbow'
+
         plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
         plt.axis('square')
         plt.axis([self.Rango[0,0], self.Rango[0,1], self.Rango[1,0], self.Rango[1,1],])
+        
         plt.title(f'{self.Titulo}')
         plt.xlabel(f'{self.xlabel}')
         plt.ylabel(f'{self.ylabel}')
         plt.grid()
         plt.show()
+
+
+    def _variable_plot(self, param_name, *, color='rainbow'):
+        """
+        Crea un plot variable en función del parámetro especificado `param_name`. 
+        Debe ser el mismo nombre que en la definición de la función.
+        """
+
+        def update(val):
+            ax.cla()
+            self.dF_args.update({param_name:val})
+            self.dibuja_streamplot(ax, color=color)
+            fig.canvas.draw_idle()
+        
+        fig, ax = plt.subplots()
+        stream = self.dibuja_streamplot(ax, color=color)
+        fig.subplots_adjust(top=0.8)
+        
+        bbox = ax.get_position()
+        axParametro = fig.add_axes([bbox.x0, bbox.y1+0.1, bbox.width, 0.03])
+        sParametro = Slider(axParametro, param_name, -10.0, 10.0, valinit=self.dF_args[param_name], valstep=0.1)
+        sParametro.on_changed(update)
+        
+        plt.show() 
+    
+
+
+    def _transformacionPolares(self):
+        """
+        Devuelve la expresión del campo de velocidades en cartesianas, si la expresión del sistema viene dada en polares
+        """
+        self._dR, self._dTheta = self.dF(self._R, self._Theta, *self.dF_args)
+        self._dX, self._dY = self._dR*np.cos(self._Theta) - self._R*np.sin(self._Theta)*self._dTheta, self._dR*np.sin(self._Theta)+self._R*np.cos(self._Theta)*self._dTheta
+
+
+
+    def dibuja_streamplot(self, ax, *, color='rainbow'):
+        if self.Polar:
+            self._transformacionPolares()
+        else:
+            self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args)
+        colores = (self._dX**2+self._dY**2)**(0.5)
+        colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
+        stream = ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
+        ax.set_xlim([self.Rango[0,0], self.Rango[0,1]])
+        ax.set_ylim([self.Rango[1,0], self.Rango[1,1]])
+        x0,x1 = ax.get_xlim()
+        y0,y1 = ax.get_ylim()
+        ax.set_aspect(abs(x1-x0)/abs(y1-y0))
+        ax.set_title(f'{self.Titulo}')
+        ax.set_xlabel(f'{self.xlabel}')
+        ax.set_ylabel(f'{self.ylabel}')
+        ax.grid()
+        return stream
 
 
     # Funciones para asegurarse que los parametros introducidos son válidos
