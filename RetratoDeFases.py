@@ -64,7 +64,7 @@ class RetratoDeFases2D:
 
     def plot(self, *, color='rainbow'):
         self.dibuja_streamplot(color=color)
-        plt.show()
+        #fig.show()
 
 
     def dibuja_streamplot(self, *, color='rainbow'):
