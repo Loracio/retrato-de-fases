@@ -133,7 +133,7 @@ class RetratoDeFases2D:
         """
         Devuelve la expresión del campo de velocidades en cartesianas, si la expresión del sistema viene dada en polares
         """
-        self._dR, self._dTheta = self.dF(self._R, self._Theta, *self.dF_args)
+        self._dR, self._dTheta = self.dF(self._R, self._Theta, **self.dF_args)
         self._dX, self._dY = self._dR*np.cos(self._Theta) - self._R*np.sin(self._Theta)*self._dTheta, self._dR*np.sin(self._Theta)+self._R*np.cos(self._Theta)*self._dTheta
 
 
