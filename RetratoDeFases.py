@@ -2,7 +2,7 @@ from inspect import signature
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, TextBox
 import numpy as np
 
 
@@ -51,71 +51,84 @@ class RetratoDeFases2D:
         self.ylabel = ylabel                                                                  # Titulo en eje Y
 
 
+        # Variables para la representación
+        self.fig, self.ax = plt.subplots()
+        self._sliders = {}
+
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
         self._X, self._Y = np.meshgrid(np.linspace(self.Rango[0,0], self.Rango[0,1], self.L), np.linspace(self.Rango[1,0], self.Rango[1,1], self.L))   #Crea una malla de tamaño L²
 
         if self.Polar:   
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
-            self._transformacionPolares()
-        else:
-            self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args) # Calcula el campo de velocidades en cada uno de los puntos de la malla
 
 
-    def plot(self, *, color='rainbow', linewidth=1, parametro=None):
-        
-        if parametro:
-
-            #TODO: comprobar que el parametro está en dF_args
-
-            #TODO: pasar como argumento los limites de la barra y el salto entre cada valor (valstep)
-
-            self._variable_plot(parametro, color=color)
-
-        else:
-            self._standard_plot(color, linewidth)
-
-        
-
-    def _standard_plot(self, color, linewidth):
-        colores = (self._dX**2+self._dY**2)**(0.5)
-        colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
-
-        plt.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
-        plt.axis('square')
-        plt.axis([self.Rango[0,0], self.Rango[0,1], self.Rango[1,0], self.Rango[1,1],])
-        
-        plt.title(f'{self.Titulo}')
-        plt.xlabel(f'{self.xlabel}')
-        plt.ylabel(f'{self.ylabel}')
-        plt.grid()
+    def plot(self, *, color='rainbow'):
+        self.dibuja_streamplot(color=color)
         plt.show()
 
 
-    def _variable_plot(self, param_name, *, color='rainbow'):
+    def dibuja_streamplot(self, *, color='rainbow'):
+        if self.Polar:
+            self._transformacionPolares()
+        else:
+            self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args)
+        colores = (self._dX**2+self._dY**2)**(0.5)
+        colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
+        stream = self.ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
+        self.ax.set_xlim([self.Rango[0,0], self.Rango[0,1]])
+        self.ax.set_ylim([self.Rango[1,0], self.Rango[1,1]])
+        x0,x1 = self.ax.get_xlim()
+        y0,y1 = self.ax.get_ylim()
+        self.ax.set_aspect(abs(x1-x0)/abs(y1-y0))
+        self.ax.set_title(f'{self.Titulo}')
+        self.ax.set_xlabel(f'{self.xlabel}')
+        self.ax.set_ylabel(f'{self.ylabel}')
+        self.ax.grid()
+        
+        return stream
+
+
+    def add_slider(self, param_name, *, valinit=0, valstep=0.1, valinterval=10, color='rainbow'):
         """
-        Crea un plot variable en función del parámetro especificado `param_name`. 
-        Debe ser el mismo nombre que en la definición de la función.
+        Añade un slider sobre un plot ya existente.
         """
 
-        def update(val):
-            ax.cla()
-            self.dF_args.update({param_name:val})
-            self.dibuja_streamplot(ax, color=color)
-            fig.canvas.draw_idle()
+        def updateSlider(param_name):
+            def inner(val):
+                inner.C = param_name
+                self.ax.cla()
+                self.dF_args.update({inner.C:val})
+                self.dibuja_streamplot(color=color)
+                self.fig.canvas.draw_idle()
+            return inner
         
-        fig, ax = plt.subplots()
-        stream = self.dibuja_streamplot(ax, color=color)
-        fig.subplots_adjust(top=0.8)
+        self.fig.subplots_adjust(bottom=0.25)
+
+        if self._is_number(valinterval):
+            if valinterval == 0:
+                raise RangoInvalid('0 no es un rango válido')
+            valinterval = [-valinterval,valinterval]
+
+        elif self._is_range(valinterval):
+            a,b = valinterval
+            if self._is_number(a) and self._is_number(b):
+                valinterval = [a,b]
+            else:
+                raise RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
+        else:
+            raise RangoInvalid(f'{valinterval} no es un rango válido')
+        valinterval.sort()
         
-        bbox = ax.get_position()
-        axParametro = fig.add_axes([bbox.x0, bbox.y1+0.1, bbox.width, 0.03])
-        sParametro = Slider(axParametro, param_name, -10.0, 10.0, valinit=self.dF_args[param_name], valstep=0.1)
-        sParametro.on_changed(update)
-        
-        plt.show() 
+        sbox = self.ax.get_position()
+        ax_Parametro = self.fig.add_axes([0.25, 0.015 + 0.05*len(self._sliders), 0.5, 0.03])
+        self._sliders.update({param_name:{
+            'sxbox': sbox,
+            'axParametro': ax_Parametro,
+            'sParametro': Slider(ax_Parametro, param_name, valinterval[0], valinterval[1], valinit=valinit, valstep=valstep),
+        }})
+        self._sliders[param_name]['sParametro'].on_changed(updateSlider(param_name))
     
-
-
+    
     def _transformacionPolares(self):
         """
         Devuelve la expresión del campo de velocidades en cartesianas, si la expresión del sistema viene dada en polares
@@ -123,26 +136,6 @@ class RetratoDeFases2D:
         self._dR, self._dTheta = self.dF(self._R, self._Theta, *self.dF_args)
         self._dX, self._dY = self._dR*np.cos(self._Theta) - self._R*np.sin(self._Theta)*self._dTheta, self._dR*np.sin(self._Theta)+self._R*np.cos(self._Theta)*self._dTheta
 
-
-
-    def dibuja_streamplot(self, ax, *, color='rainbow'):
-        if self.Polar:
-            self._transformacionPolares()
-        else:
-            self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args)
-        colores = (self._dX**2+self._dY**2)**(0.5)
-        colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
-        stream = ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
-        ax.set_xlim([self.Rango[0,0], self.Rango[0,1]])
-        ax.set_ylim([self.Rango[1,0], self.Rango[1,1]])
-        x0,x1 = ax.get_xlim()
-        y0,y1 = ax.get_ylim()
-        ax.set_aspect(abs(x1-x0)/abs(y1-y0))
-        ax.set_title(f'{self.Titulo}')
-        ax.set_xlabel(f'{self.xlabel}')
-        ax.set_ylabel(f'{self.ylabel}')
-        ax.grid()
-        return stream
 
 
     # Funciones para asegurarse que los parametros introducidos son válidos
@@ -163,14 +156,21 @@ class RetratoDeFases2D:
     def Rango(self):
         return self._Rango
 
+    @staticmethod
+    def _is_number(x):
+        return isinstance(x, (float,int))
+    @staticmethod
+    def _is_range(U):
+        return isinstance(U, (list,tuple))
+
     @Rango.setter
     def Rango(self, value):
-        def is_number(x):
+        def _is_number(x):
             return isinstance(x, (float,int))
-        def is_range(U):
+        def _is_range(U):
             return isinstance(U, (list,tuple))
 
-        if is_number(value):
+        if _is_number(value):
             if value == 0:
                 raise RangoInvalid('0 no es un rango válido')
             aux = [0,value]
@@ -178,17 +178,17 @@ class RetratoDeFases2D:
             self._Rango = np.array([aux,aux])
             return
 
-        if is_range(value):
+        if _is_range(value):
             a,b = value
-            if is_number(a) and is_number(b):
+            if _is_number(a) and _is_number(b):
                 self._Rango = np.array([[a,b]]*2)
                 return
 
-            if is_range(a) and is_range(b):
+            if _is_range(a) and _is_range(b):
                 try:
                     aa, ab = a
                     ba, bb = b
-                    if is_number(aa) and is_number(ab) and is_number(ba) and is_number(bb):
+                    if _is_number(aa) and _is_number(ab) and _is_number(ba) and _is_number(bb):
                         self._Rango = np.array([[aa,ab],[ba, bb]])
                 except Exception:
                     raise RangoInvalid('Error al convertir a rango tipo: [ [], [] ].')
