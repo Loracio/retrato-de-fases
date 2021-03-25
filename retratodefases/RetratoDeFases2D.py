@@ -1,6 +1,7 @@
 from inspect import signature
 
-from exceptions import *
+from .exceptions import *
+from . import sliders
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -79,7 +80,7 @@ class RetratoDeFases2D:
 
         if self._is_number(valinterval):
             if valinterval == 0:
-                raise RangoInvalid('0 no es un rango válido')
+                raise exceptions2D.RangoInvalid('0 no es un rango válido')
             valinterval = [-valinterval,valinterval]
 
         elif self._is_range(valinterval):
@@ -87,9 +88,9 @@ class RetratoDeFases2D:
             if self._is_number(a) and self._is_number(b):
                 valinterval = [a,b]
             else:
-                raise RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
+                raise exceptions2D.RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
         else:
-            raise RangoInvalid(f'{valinterval} no es un rango válido')
+            raise exceptions2D.RangoInvalid(f'{valinterval} no es un rango válido')
         valinterval.sort()
         
         sbox = self.ax.get_position()
@@ -148,7 +149,7 @@ class RetratoDeFases2D:
 
         if _is_number(value):
             if value == 0:
-                raise RangoInvalid('0 no es un rango válido')
+                raise exceptions2D.RangoInvalid('0 no es un rango válido')
             aux = [0,value]
             aux.sort()
             self._Rango = np.array([aux,aux])
@@ -167,9 +168,9 @@ class RetratoDeFases2D:
                     if _is_number(aa) and _is_number(ab) and _is_number(ba) and _is_number(bb):
                         self._Rango = np.array([[aa,ab],[ba, bb]])
                 except Exception:
-                    raise RangoInvalid('Error al convertir a rango tipo: [ [], [] ].')
+                    raise exceptions2D.RangoInvalid('Error al convertir a rango tipo: [ [], [] ].')
         else:
-            raise RangoInvalid(f"{value} no es un rango coherente")
+            raise exceptions2D.RangoInvalid(f"{value} no es un rango coherente")
     
 
     @property

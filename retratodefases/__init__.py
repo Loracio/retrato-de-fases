@@ -1,2 +1,1 @@
-import RetratoDeFases2D
-from RetratoDeFases2D import RetratoDeFases2D
+from .RetratoDeFases2D import RetratoDeFases2D

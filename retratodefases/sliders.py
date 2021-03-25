@@ -1,13 +1,13 @@
-from exceptions import *
+from .exceptions import *
 
 class Slider():
-    def __init__(self, retrato, param_name):
+    def __init__(self, retrato, param_name, valinit=None, valstep=0.1, valinterval=[]):
         self.retrato = retrato
         self.param_name = param_name
         
         if self._is_number(valinterval):
             if valinterval == 0:
-                raise RangoInvalid('0 no es un rango válido')
+                raise exceptions2D.RangoInvalid('0 no es un rango válido')
             valinterval = [-valinterval,valinterval]
 
         elif self._is_range(valinterval):
@@ -15,9 +15,9 @@ class Slider():
             if self._is_number(a) and self._is_number(b):
                 valinterval = [a,b]
             else:
-                raise RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
+                raise exceptions2D.RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
         else:
-            raise RangoInvalid(f'{valinterval} no es un rango válido')
+            raise exceptions2D.RangoInvalid(f'{valinterval} no es un rango válido')
         valinterval.sort()
 
 
@@ -27,7 +27,7 @@ class Slider():
         self.ax = self.fig.add_axes([0.25, 0.015 + 0.05*len(self._sliders), 0.5, 0.03])
         
         aux = {'valinit':valinit} if valinit else {}
-        self.slider = Slider(ax_Parametro, param_name, *valinterval, valstep=valstep, **aux)
+        self.slider = Slider(self.ax, param_name, *valinterval, valstep=valstep, **aux)
     
     def __call__(self, value):
         self.retrato.ax.cla()
