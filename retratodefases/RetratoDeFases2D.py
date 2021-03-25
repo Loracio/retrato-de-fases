@@ -5,7 +5,7 @@ from . import sliders
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+
 import numpy as np
 
 class RetratoDeFases2D:
@@ -45,12 +45,16 @@ class RetratoDeFases2D:
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
 
 
-    def plot(self, *, color='rainbow'):
-        self.dibuja_streamplot(color=color)
+    def plot(self, *, color=None):
+        self.dibuja_streamplot(color=color if color else self.color)
+
+        self.fig.canvas.draw_idle()
 
 
-    def dibuja_streamplot(self, *, color='rainbow'):
-        self.dF_args = {name: value['value'] for name, value in self._sliders.items() if value['value']!= None}
+    def dibuja_streamplot(self, *, color=None):
+
+        self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}
+
         if self.Polar:
             self._transformacionPolares()
         else:
@@ -71,39 +75,15 @@ class RetratoDeFases2D:
         return stream
 
 
-    def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10, color='rainbow'):
+    def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
         """
         Añade un slider sobre un plot ya existente.
         """
+        self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
 
         self.fig.subplots_adjust(bottom=0.25)
 
-        if self._is_number(valinterval):
-            if valinterval == 0:
-                raise exceptions2D.RangoInvalid('0 no es un rango válido')
-            valinterval = [-valinterval,valinterval]
-
-        elif self._is_range(valinterval):
-            a,b = valinterval
-            if self._is_number(a) and self._is_number(b):
-                valinterval = [a,b]
-            else:
-                raise exceptions2D.RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
-        else:
-            raise exceptions2D.RangoInvalid(f'{valinterval} no es un rango válido')
-        valinterval.sort()
-        
-        sbox = self.ax.get_position()
-        ax_Parametro = self.fig.add_axes([0.25, 0.015 + 0.05*len(self._sliders), 0.5, 0.03])
-        aux = {'valinit':valinit} if valinit else {}
-
-        self._sliders.update({param_name:{
-            'value':valinit,
-            'sxbox': sbox,
-            'axParametro': ax_Parametro,
-            'sParametro': Slider(ax_Parametro, param_name, valinterval[0], valinterval[1], valstep=valstep, **aux)
-        }})
-        self._sliders[param_name]['sParametro'].on_changed(_updateSlider(self, param_name, color))
+        self.sliders[param_name].slider.on_changed(self.sliders[param_name])
     
     
     def _transformacionPolares(self):
@@ -133,12 +113,6 @@ class RetratoDeFases2D:
     def Rango(self):
         return self._Rango
 
-    @staticmethod
-    def _is_number(x):
-        return isinstance(x, (float,int))
-    @staticmethod
-    def _is_range(U):
-        return isinstance(U, (list,tuple))
 
     @Rango.setter
     def Rango(self, value):
