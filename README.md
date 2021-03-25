@@ -32,17 +32,10 @@ def dF(x,y, *, w=1):
 ```
 En este caso la llamada a la función debería incluir un diccionario con la variable `w` y su valor constante al kword `dF_args`:
 ```python
-RetratoDeFases2D(dF, 5, 50, dF_args={'w':3.1415})
+RetratoDeFases2D(dF, [-5, 5], dF_args={'w':3.14})
 ```
  
- Además, se ha de pasar el rango sobre el cuál se quiere representar el retrato (se representa sobre una región cuadrada). Se debe expresar la densidad de puntos en el rango escogido, es decir, indicar la longitud de la malla sobre la cual se pinta el flujo.
- 
- Como parámetros opcionales se le puede pasar la densidad de líneas de flujo, que controla la cercanía de las líneas de flujo. Alterar este parámetro varía considerablemente el tiempo de computación. El booleano 'Polar' permite pasar una expresión del sistema en polares. Los otros parámetros opcionales son el título de la gráfica y de cada uno de los ejes. 
- 
- 
- Dentro de la propia clase, se realiza el cálculo de las líneas de flujo en el espacio de fases, para poder realizar un plot del espacio de fases.
- 
  # Instrucciones para usar [ejemplos.ipynb](ejemplos.ipynb)
- **Se debe tener en la misma carpeta el archivo [RetratoDeFases.py](RetratoDeFases.py) para que funcione**. Únicamente abir el notebook y ejecutar las celdas, debería sacar distintas gráficas para los distintos sistemas ejemplo que hay en el archivo.
+ **Se debe tener en la misma carpeta el archivo [RetratoDeFases.py](RetratoDeFases.py) para que funcione**. Únicamente abir el notebook y ejecutar las celdas. En él se encuentra una explicación de cómo hacer uso de las clases de [RetratoDeFases.py](RetratoDeFases.py) correctamente.
  
  
