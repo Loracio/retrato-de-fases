@@ -26,6 +26,20 @@ class RangoInvalid(RetratoExceptions):
     def __init__(self, text):
         super().__init__(f"El rango no es válido: {text}")
 
+
+class _updateSlider():
+    def __init__(self, retrato, param_name, color):
+        self.retrato = retrato
+        self.param_name = param_name
+        self.color = color
+    
+    def __call__(self, value, *, color=None):
+        self.retrato.ax.cla()
+        self.retrato._sliders[self.param_name]['value'] = value
+        self.retrato.dibuja_streamplot(color=self.color)
+        self.retrato.fig.canvas.draw_idle()
+
+
 class RetratoDeFases2D:
     """
     Hace un retrato de fases de un sistema 2D.
@@ -64,10 +78,10 @@ class RetratoDeFases2D:
 
     def plot(self, *, color='rainbow'):
         self.dibuja_streamplot(color=color)
-        #fig.show()
 
 
     def dibuja_streamplot(self, *, color='rainbow'):
+        self.dF_args = {name: value['value'] for name, value in self._sliders.items() if value['value']!= None}
         if self.Polar:
             self._transformacionPolares()
         else:
@@ -88,20 +102,11 @@ class RetratoDeFases2D:
         return stream
 
 
-    def add_slider(self, param_name, *, valinit=0, valstep=0.1, valinterval=10, color='rainbow'):
+    def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10, color='rainbow'):
         """
         Añade un slider sobre un plot ya existente.
         """
 
-        def updateSlider(param_name):
-            def inner(val):
-                inner.C = param_name
-                self.ax.cla()
-                self.dF_args.update({inner.C:val})
-                self.dibuja_streamplot(color=color)
-                self.fig.canvas.draw_idle()
-            return inner
-        
         self.fig.subplots_adjust(bottom=0.25)
 
         if self._is_number(valinterval):
@@ -121,12 +126,15 @@ class RetratoDeFases2D:
         
         sbox = self.ax.get_position()
         ax_Parametro = self.fig.add_axes([0.25, 0.015 + 0.05*len(self._sliders), 0.5, 0.03])
+        aux = {'valinit':valinit} if valinit else {}
+
         self._sliders.update({param_name:{
+            'value':valinit,
             'sxbox': sbox,
             'axParametro': ax_Parametro,
-            'sParametro': Slider(ax_Parametro, param_name, valinterval[0], valinterval[1], valinit=valinit, valstep=valstep),
+            'sParametro': Slider(ax_Parametro, param_name, valinterval[0], valinterval[1], valstep=valstep, **aux)
         }})
-        self._sliders[param_name]['sParametro'].on_changed(updateSlider(param_name))
+        self._sliders[param_name]['sParametro'].on_changed(_updateSlider(self, param_name, color))
     
     
     def _transformacionPolares(self):
