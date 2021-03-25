@@ -2,6 +2,7 @@ from inspect import signature
 
 from .exceptions import *
 from . import sliders
+from .utils import utils
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -39,7 +40,7 @@ class RetratoDeFases2D:
         self.sliders = {}
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
-        self._X, self._Y = np.meshgrid(np.linspace(self.Rango[0,0], self.Rango[0,1], self.L), np.linspace(self.Rango[1,0], self.Rango[1,1], self.L))   #Crea una malla de tamaño L²
+        self._X, self._Y = np.meshgrid(np.linspace(*self.Rango[0,:], self.L), np.linspace(*self.Rango[1,:], self.L))   #Crea una malla de tamaño L²
 
         if self.Polar:   
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
@@ -62,8 +63,8 @@ class RetratoDeFases2D:
         colores = (self._dX**2+self._dY**2)**(0.5)
         colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
         stream = self.ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
-        self.ax.set_xlim([self.Rango[0,0], self.Rango[0,1]])
-        self.ax.set_ylim([self.Rango[1,0], self.Rango[1,1]])
+        self.ax.set_xlim(self.Rango[0,:])
+        self.ax.set_ylim(self.Rango[1,:])
         x0,x1 = self.ax.get_xlim()
         y0,y1 = self.ax.get_ylim()
         self.ax.set_aspect(abs(x1-x0)/abs(y1-y0))
@@ -103,10 +104,10 @@ class RetratoDeFases2D:
     @dF.setter
     def dF(self, func):
         if not callable(func):
-            raise dFNotCallable(func)
+            raise exceptions2D.dFNotCallable(func)
         sig = signature(func)
         if len(sig.parameters)<2 + len(self.dF_args):
-            raise dFInvalid(sig, self.dF_args)
+            raise exceptions2D.dFInvalid(sig, self.dF_args)
         self._dF = func
 
     @property
@@ -116,36 +117,7 @@ class RetratoDeFases2D:
 
     @Rango.setter
     def Rango(self, value):
-        def _is_number(x):
-            return isinstance(x, (float,int))
-        def _is_range(U):
-            return isinstance(U, (list,tuple))
-
-        if _is_number(value):
-            if value == 0:
-                raise exceptions2D.RangoInvalid('0 no es un rango válido')
-            aux = [0,value]
-            aux.sort()
-            self._Rango = np.array([aux,aux])
-            return
-
-        if _is_range(value):
-            a,b = value
-            if _is_number(a) and _is_number(b):
-                self._Rango = np.array([[a,b]]*2)
-                return
-
-            if _is_range(a) and _is_range(b):
-                try:
-                    aa, ab = a
-                    ba, bb = b
-                    if _is_number(aa) and _is_number(ab) and _is_number(ba) and _is_number(bb):
-                        self._Rango = np.array([[aa,ab],[ba, bb]])
-                except Exception:
-                    raise exceptions2D.RangoInvalid('Error al convertir a rango tipo: [ [], [] ].')
-        else:
-            raise exceptions2D.RangoInvalid(f"{value} no es un rango coherente")
-    
+        self._Rango = np.array(utils.construct_interval_2d(value))
 
     @property
     def dF_args(self):
@@ -155,5 +127,5 @@ class RetratoDeFases2D:
     def dF_args(self, value):
         if value:
             if not isinstance(value, dict):
-                raise dF_argsInvalid(value)
+                raise exceptions2D.dF_argsInvalid(value)
         self._dF_args = value

@@ -1,5 +1,7 @@
+import numpy as np
+
 from .exceptions import *
-from .utils import *
+from .utils import utils
 from matplotlib.widgets import Slider as matplot_slider
 
 class Slider():
@@ -8,21 +10,9 @@ class Slider():
         self.param_name = param_name
         self.value = valinit
         
-        if utils._is_number(valinterval):
-            if valinterval == 0:
-                raise exceptions2D.RangoInvalid('0 no es un rango válido')
-            valinterval = [-valinterval,valinterval]
-
-        elif self._is_range(valinterval):
-            a,b = valinterval
-            if utils._is_number(a) and utils._is_number(b):
-                valinterval = [a,b]
-            else:
-                raise exceptions2D.RangoInvalid('el rango (1D) debe ser o un real o una lista de dos')
-        else:
-            raise exceptions2D.RangoInvalid(f'{valinterval} no es un rango válido')
+        valinterval = utils.construct_interval_1d(valinterval)
         valinterval.sort()
-
+        valinterval = np.array(valinterval)
 
         # TODO: ajustar plot. Debería ser función de la clase principal: 
         self.retrato.fig.subplots_adjust(bottom=0.25)
