@@ -11,7 +11,6 @@ class Slider():
         self.value = valinit
         
         valinterval = utils.construct_interval_1d(valinterval)
-        valinterval.sort()
         valinterval = np.array(valinterval)
  
         self.retrato.fig.subplots_adjust(bottom=0.25)
