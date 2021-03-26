@@ -13,6 +13,7 @@ El [código](#archivos) es abierto, todos podéis descargarlo y utilizarlo. Y ta
 ## Archivos
 - [retratodefases](retratodefases): Es el fichero que contiene todo lo necesario para usar la librería: clases, excepciones, funciones que se usan internamente...
 - [ejemplos.ipynb](ejemplos.ipynb): Ejemplos para ver cómo se utilizan las clases del módulo [retratodefases](retratodefases)
+- [ejemplosSliders.py](ejemplosSliders.py): Contiene ejemplos de plots con sliders.
 - [README.md](README.md): Es lo que estás leyendo ahora mismo.
 - [gitignore](.gitignore): sirve para decirle a Git qué archivos o directorios completos debe ignorar y no subir al repositorio de código. Como dice su nombre: ignóralo.
 
