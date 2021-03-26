@@ -13,8 +13,7 @@ class Slider():
         valinterval = utils.construct_interval_1d(valinterval)
         valinterval.sort()
         valinterval = np.array(valinterval)
-
-        # TODO: ajustar plot. Debería ser función de la clase principal: 
+ 
         self.retrato.fig.subplots_adjust(bottom=0.25)
         self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.5, 0.03])
         
