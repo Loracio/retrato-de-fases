@@ -20,7 +20,7 @@ class Trayectoria3D:
     """
     Hace un retrato de fases de un sistema 3D.
     """
-    def __init__(self, dF, RangoRepresentacion, *, dF_args={}, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = 'Y', zlabel = 'Z'):
+    def __init__(self, dF, RangoRepresentacion, dF_args, *, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = 'Y', zlabel = 'Z'):
         """
         Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
         También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
@@ -32,6 +32,8 @@ class Trayectoria3D:
         self.dF = jit(dF, nopython=True, parallel=True)  # Derivadas de las variables respecto al tiempo
         self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
         self.dimension = 3
+
+        self.h = 0.01
 
         # Variables Runge-Kutta
         self.runge_freq = 5
@@ -60,31 +62,33 @@ class Trayectoria3D:
         #    self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
 
 
-    def rungekutta_time_independent(self, *initial_values):
+    def rungekutta_time_independent(self, initial_values):
+        initial_values = np.array(initial_values, dtype='float64')
         results = np.zeros([len(initial_values), self.runge_freq])
         results[:,0]= initial_values
         for i in range(1, self.runge_freq*self._runge_inner_steps):
-            k1 = self.dF(initial_values, self.dF_initial_values)
-            k2 = self.dF(initial_values+0.5*k1*self.h, self.dF_initial_values)
-            k3 = self.dF(initial_values+0.5*k2*self.h, self.dF_initial_values)
-            k4 = self.dF(initial_values+k3*self.h, self.dF_initial_values)
+            k1 = np.array(self.dF(*(initial_values), **self.dF_args))
+            k2 = np.array(self.dF(*(initial_values+0.5*k1*self.h), **self.dF_args))
+            k3 = np.array(self.dF(*(initial_values+0.5*k2*self.h), **self.dF_args))
+            k4 = np.array(self.dF(*(initial_values+k3*self.h), **self.dF_args))
             initial_values += 1/6*self.h*(k1+2*k2+2*k3+k4)
-            if index := i%self._runge_inner_steps ==0:
-                results[:,index]
-        yield results
+            if (index := i%self._runge_inner_steps) == 0:
+                results[:,index] = initial_values
+        return results
 
     def update_time_independent(self, *initial_values):
-        initial_values = list(initial_values)
+        values = np.zeros([3,1])
+        values[:,0] = np.array(initial_values)
         
-        for i in range(len(initial_values)):
-            #! Corregir lo que falle con el generador rungekutta
-            new_values = self.rungekutta_time_independent(initial_values)
-            initial_values[i].append(new_values[i])
+        new_values = self.rungekutta_time_independent(values[:,-1])
+        for i in range(values.shape[0]):
+            values[i,:] = np.concatenate((values[i,:], new_values[i,:]))
+        #initial_values[i+1].append(new_values[i])
 
-        self.ax3d.plot(*initial_values)
-        self.axX.plot(*initial_values[1:2])
-        self.axY.plot(*initial_values[0:2:2])
-        self.axZ.plot(*initial_values[0:1])
+        self.ax3d.plot(*values)
+        self.axX.plot(*values[1:2])
+        self.axY.plot(*values[0:2:2])
+        self.axZ.plot(*values[0:1])
 
     def plot(self, *args):
         self.prepare_plot()

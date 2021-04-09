@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def dF(x,y,z,*, s=10, r=28, b=8/3):
         return -s*x+s*y, -x*z+r*x-y, x*y-b*z
-a = Trayectoria3D(dF, [5,5,5])
+a = Trayectoria3D(dF, [[-20,20],[-20,30],[0,30]], {'s':10, 'r':28, 'b':8/3})
 a.plot(1,1,1)
 plt.show()
 
