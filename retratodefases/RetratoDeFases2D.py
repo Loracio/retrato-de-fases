@@ -104,10 +104,10 @@ class RetratoDeFases2D:
     @dF.setter
     def dF(self, func):
         if not callable(func):
-            raise exceptions2D.dFNotCallable(func)
+            raise exceptions.dFNotCallable(func)
         sig = signature(func)
         if len(sig.parameters)<2 + len(self.dF_args):
-            raise exceptions2D.dFInvalid(sig, self.dF_args)
+            raise exceptions.dFInvalid(sig, self.dF_args)
         self._dF = func
 
     @property
@@ -117,7 +117,7 @@ class RetratoDeFases2D:
 
     @Rango.setter
     def Rango(self, value):
-        self._Rango = np.array(utils.construct_interval_2d(value))
+        self._Rango = np.array(utils.construct_interval(value, dim=2))
 
     @property
     def dF_args(self):
@@ -127,5 +127,5 @@ class RetratoDeFases2D:
     def dF_args(self, value):
         if value:
             if not isinstance(value, dict):
-                raise exceptions2D.dF_argsInvalid(value)
+                raise exceptions.dF_argsInvalid(value)
         self._dF_args = value
