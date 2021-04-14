@@ -17,3 +17,7 @@ class dF_argsInvalid(RetratoExceptions):
 class RangoInvalid(RetratoExceptions):
     def __init__(self, text):
         super().__init__(f"El rango no es válido: {text}")
+
+class dFArgsRequired(RetratoExceptions):
+    def __init__(self):
+        super().__init__(f"Con el kword numba=True es necesario introducir un diccionario al kword dF_args con los parámetros opcionales de la función especificada")

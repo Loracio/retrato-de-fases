@@ -1,26 +1,26 @@
+import random
 from inspect import signature
 
-from .exceptions import *
-from . import sliders
-from .utils import utils
-
 import matplotlib
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-
-import numba
-from numba import jit
-
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import cm
+
+from . import sliders
+from .exceptions import *
+from .utils import utils
 
 # TODO: Falta cambiar nombres y documentación. Y evidentemente quitar cosas que ya no se usan
 
 
+
+
 class Trayectoria3D:
     """
-    Hace un retrato de fases de un sistema 3D.
+    Computa una trayectoria en un sistema 3D.
     """
-    def __init__(self, dF, RangoRepresentacion, dF_args, *, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = 'Y', zlabel = 'Z'):
+    def __init__(self, dF, *, RangoRepresentacion=None, lines=False, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
         """
         Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
         También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
@@ -29,29 +29,61 @@ class Trayectoria3D:
 
         # Variables obligatorias
         self.dF_args = dF_args                           # Argumentos extras que haya que proporcionar a la función dF
-        self.dF = jit(dF, nopython=True, parallel=True)  # Derivadas de las variables respecto al tiempo
+        self.dF = dF                                     # Derivadas de las variables respecto al tiempo
         self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
         self.dimension = 3
 
-        self.h = 0.01
+        #(Polar = False, Titulo = 'Trayectoria', xlabel = 'X', ylabel = 'Y', zlabel = 'Z', numba=False)
+
+        try: 
+            if kargs['numba']:
+                import numba as _numba
+                from numba import jit, vectorize
+                self.dF = jit(self.dF, nopython=True, cache=True, parallel=True)
+                if not dF_args:
+                    exceptions.dFArgsRequired()
+        except KeyError:
+            pass
+
 
         # Variables Runge-Kutta
-        self.runge_freq = 5
-        self._runge_inner_steps = 100
-        self.max_iters = 5
+        self.h = runge_kutta_step
+        self.runge_kutta_freq = runge_kutta_freq
+        self.n_points = n_points
         
         # Variables no obligatorias
-        self.Titulo = Titulo                                                                  # Titulo para el retrato de fases.
-        self.xlabel = xlabel                                                                  # Titulo en eje X
-        self.ylabel = ylabel                                                                  # Titulo en eje Y
-        self.zlabel = zlabel                                                                  # Titulo en eje Z
+        self.Titulo = kargs['Titulo'] if kargs.get('Titulo') else 'Trayectoria'             # Titulo para el retrato de fases.
+        self.xlabel = kargs['xlabel'] if kargs.get('xlabel') else 'X'                       # Titulo en eje X
+        self.ylabel = kargs['ylabel'] if kargs.get('ylabel') else 'Y'                       # Titulo en eje Y
+        self.zlabel = kargs['zlabel'] if kargs.get('zlabel') else 'Z'                       # Titulo en eje Z
 
 
         # Variables para la representación
-        #self.fig, self.ax = plt.subplots()
-        self.fig, ((self.ax3d, self.axZ), (self.axY, self.axX)) = plt.subplots(2,2)
-        #self.ax = self.fig.add_subplot(projection='3d')
+        figX, axX= plt.subplots()
+        figY, axY= plt.subplots()
+        figZ, axZ= plt.subplots()
+        fig3d = plt.figure()
+        ax3d = fig3d.add_subplot(projection='3d')
+
+        self.fig = {
+            'X': figX,
+            'Y': figY,
+            'Z': figZ,
+            '3d': fig3d
+        }
+        self.ax = {
+            'X': axX,
+            'Y': axY,
+            'Z': axZ,
+            '3d': ax3d
+        }
+        
         self.sliders = {}
+
+
+        self.lines = lines
+        self.color = kargs.get('color')
+        self._mark_start_point = kargs.get('mark_start_point')
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
         #! elf._X, self._Y = np.meshgrid(np.linspace(*self.Rango[0,:], self.L), np.linspace(*self.Rango[1,:], self.L))   #Crea una malla de tamaño L²
@@ -63,48 +95,74 @@ class Trayectoria3D:
 
 
     def rungekutta_time_independent(self, initial_values):
-        initial_values = np.array(initial_values, dtype='float64')
-        results = np.zeros([len(initial_values), self.runge_freq])
-        results[:,0]= initial_values
-        for i in range(1, self.runge_freq*self._runge_inner_steps):
-            k1 = np.array(self.dF(*(initial_values), **self.dF_args))
-            k2 = np.array(self.dF(*(initial_values+0.5*k1*self.h), **self.dF_args))
-            k3 = np.array(self.dF(*(initial_values+0.5*k2*self.h), **self.dF_args))
-            k4 = np.array(self.dF(*(initial_values+k3*self.h), **self.dF_args))
-            initial_values += 1/6*self.h*(k1+2*k2+2*k3+k4)
-            if (index := i%self._runge_inner_steps) == 0:
-                results[:,index] = initial_values
-        return results
+        values = initial_values
+        if not isinstance(values, np.ndarray):
+            values = np.array(values)
+        while True:
+            k1 = np.array(self.dF(*(values), **self.dF_args))
+            k2 = np.array(self.dF(*(values+0.5*k1*self.h), **self.dF_args))
+            k3 = np.array(self.dF(*(values+0.5*k2*self.h), **self.dF_args))
+            k4 = np.array(self.dF(*(values+k3*self.h), **self.dF_args))
+            diff = 1/6*self.h*(k1+2*k2+2*k3+k4)
+            values += diff
+            yield values, diff
 
-    def update_time_independent(self, *initial_values):
-        values = np.zeros([3,1])
+
+    def compute_trayectory(self, initial_values):
+        delta = 0
+        values = np.zeros([3,self.n_points])
+
+        if not initial_values:
+            initial_values = [random.random(), random.random(), random.random()]
+            delta = 200
         values[:,0] = np.array(initial_values)
+
+        velocity = np.zeros([3,self.n_points])
         
-        new_values = self.rungekutta_time_independent(values[:,-1])
-        for i in range(values.shape[0]):
-            values[i,:] = np.concatenate((values[i,:], new_values[i,:]))
-        #initial_values[i+1].append(new_values[i])
+        for i in range(1, self.n_points + delta):
+            for j in range(self.runge_kutta_freq):
+                new_value = next(self.rungekutta_time_independent(values[:,0]))
+            if i>=delta:
+                values[:,i-delta], velocity[:,i-delta] = new_value
 
-        self.ax3d.plot(*values)
-        self.axX.plot(*values[1:2])
-        self.axY.plot(*values[0:2:2])
-        self.axZ.plot(*values[0:1])
+        return values, velocity
+        
+    def estabiliza(self):
+        self.posicion_inicial()
 
-    def plot(self, *args):
+    def posicion_inicial(self, *args):
         self.prepare_plot()
         args = list(args)
 
-        for i in range(self.max_iters):
-            self.update_time_independent(args)
-            self.fig.canvas.draw_idle()
+        values, velocity = self.compute_trayectory(args)
 
+        
 
-    #def norma(self):
-    #    cuadrado = lambda x: x*x
-    #    result = np.zeros(self.L)
-    #    for i in self._XYZ:
-    #        result += i**2
-    #    return result**0.5
+        if self.lines:
+            self.ax['3d'].plot3D(*values[:,1:])
+            self.ax['X'].plot(values[1,1:], values[2,1:])
+            self.ax['Y'].plot(values[0,1:], values[2,1:])
+            self.ax['Z'].plot(values[0,1:], values[1,1:])
+        else:
+            def norma(v):
+                suma = 0
+                for i in range(3):
+                    suma += v[i]**2
+                return np.sqrt(suma)
+            color = norma(velocity[:])
+            color /= color.max()
+
+            self.ax['3d'].scatter3D(*values, s=0.3, c=color, cmap=self.color)
+            self.ax['X'].scatter(values[1,:], values[2,:], s=0.3, c=color, cmap=self.color)
+            self.ax['Y'].scatter(values[0,:], values[2,:], s=0.3, c=color, cmap=self.color)
+            self.ax['Z'].scatter(values[0,:], values[1,:], s=0.3, c=color, cmap=self.color)
+
+        if self._mark_start_point:
+            self.ax['3d'].scatter3D(*values[:,0])
+            self.ax['X'].scatter(values[1,0], values[2,0])
+            self.ax['Y'].scatter(values[0,0], values[2,0])
+            self.ax['Z'].scatter(values[0,0], values[1,0])
+
 
 
     def prepare_plot(self):
@@ -122,35 +180,39 @@ class Trayectoria3D:
         #! stream = self.ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores_p, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
         #stream = self.ax.quiver(*self._XYZ, *self._dXYZ, length=0.1)#, cmap='Reds')
 
-        self.ax3d.set_title(f'{self.Titulo}')
-        self.ax3d.set_xlim(self.Rango[0,:])
-        self.ax3d.set_ylim(self.Rango[1,:])
-        #self.ax3d.set_zlim(self.Rango[2,:])
-        self.ax3d.set_xlabel(f'{self.xlabel}')
-        self.ax3d.set_ylabel(f'{self.ylabel}')
-        #self.ax3d.set_zlabel(f'{self.zlabel}')
-        self.ax3d.grid()
+        self.ax['3d'].set_title(f'{self.Titulo}')
+        if self.Rango:
+            self.ax['3d'].set_xlim(self.Rango[0,:])
+            self.ax['3d'].set_ylim(self.Rango[1,:])
+            self.ax['3d'].set_zlim(self.Rango[2,:])
+        self.ax['3d'].set_xlabel(f'{self.xlabel}')
+        self.ax['3d'].set_ylabel(f'{self.ylabel}')
+        self.ax['3d'].set_zlabel(f'{self.zlabel}')
+        self.ax['3d'].grid()
 
-        self.axX.set_title(f'{self.Titulo}: YZ')
-        self.axX.set_xlim(self.Rango[1,:])
-        self.axX.set_ylim(self.Rango[2,:])
-        self.axX.set_xlabel(f'{self.ylabel}')
-        self.axX.set_ylabel(f'{self.zlabel}')
-        self.axX.grid()
+        self.ax['X'].set_title(f'{self.Titulo}: YZ')
+        if self.Rango:
+            self.ax['X'].set_xlim(self.Rango[1,:])
+            self.ax['X'].set_ylim(self.Rango[2,:])
+        self.ax['X'].set_xlabel(f'{self.ylabel}')
+        self.ax['X'].set_ylabel(f'{self.zlabel}')
+        self.ax['X'].grid()
 
-        self.axY.set_title(f'{self.Titulo}: XZ')
-        self.axY.set_xlim(self.Rango[0,:])
-        self.axY.set_ylim(self.Rango[2,:])
-        self.axY.set_xlabel(f'{self.xlabel}')
-        self.axY.set_ylabel(f'{self.zlabel}')
-        self.axY.grid()
+        self.ax['Y'].set_title(f'{self.Titulo}: XZ')
+        if self.Rango:
+            self.ax['Y'].set_xlim(self.Rango[0,:])
+            self.ax['Y'].set_ylim(self.Rango[2,:])
+        self.ax['Y'].set_xlabel(f'{self.xlabel}')
+        self.ax['Y'].set_ylabel(f'{self.zlabel}')
+        self.ax['Y'].grid()
 
-        self.axZ.set_title(f'{self.Titulo}: XY')
-        self.axZ.set_xlim(self.Rango[0,:])
-        self.axZ.set_ylim(self.Rango[1,:])
-        self.axZ.set_xlabel(f'{self.xlabel}')
-        self.axZ.set_ylabel(f'{self.ylabel}')
-        self.axZ.grid()
+        self.ax['Z'].set_title(f'{self.Titulo}: XY')
+        if self.Rango:
+            self.ax['Z'].set_xlim(self.Rango[0,:])
+            self.ax['Z'].set_ylim(self.Rango[1,:])
+        self.ax['Z'].set_xlabel(f'{self.xlabel}')
+        self.ax['Z'].set_ylabel(f'{self.ylabel}')
+        self.ax['Z'].grid()
 
 
     def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
@@ -182,9 +244,13 @@ class Trayectoria3D:
     def dF(self, func):
         if not callable(func):
             raise exceptions.dFNotCallable(func)
-        sig = signature(func)
-        if len(sig.parameters)<3 + len(self.dF_args):
-            raise exceptions.dFInvalid(sig, self.dF_args)
+        try:
+            sig = signature(func)
+        except ValueError:
+            pass
+        else:
+            if len(sig.parameters)<3 + len(self.dF_args):
+                raise exceptions.dFInvalid(sig, self.dF_args)
         self._dF = func
 
     @property
@@ -193,6 +259,9 @@ class Trayectoria3D:
 
     @Rango.setter
     def Rango(self, value):
+        if value == None:
+            self._Rango = None
+            return
         self._Rango = np.array(utils.construct_interval(value, dim=3))
 
 
