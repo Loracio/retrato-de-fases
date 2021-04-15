@@ -14,8 +14,10 @@ class Slider():
         valinterval.sort()
         valinterval = np.array(valinterval)
  
-        self.retrato.fig.subplots_adjust(bottom=0.25)
-        self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.5, 0.03])
+        try:
+            self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.5, 0.03])
+        except:
+            self.ax = self.retrato.sliders_fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.5, 0.03])
         
         aux = {'valinit':valinit} if self.value else {}
         self.slider = matplot_slider(self.ax, self.param_name, *valinterval, valstep=valstep, **aux)
@@ -24,6 +26,10 @@ class Slider():
         """
         Es la función que se hace cuando se ejecuta al objeto
         """
-        self.retrato.ax.cla()
+        try:
+            self.retrato.ax.cla()
+        except:
+            for ax in self.retrato.ax.values():
+                ax.cla()
         self.value = value
         self.retrato.plot()

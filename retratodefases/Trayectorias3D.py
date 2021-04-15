@@ -11,10 +11,6 @@ from . import sliders
 from .exceptions import *
 from .utils import utils
 
-# TODO: Falta cambiar nombres y documentación. Y evidentemente quitar cosas que ya no se usan
-
-
-
 
 class Trayectoria3D:
     """
@@ -78,10 +74,17 @@ class Trayectoria3D:
             '3d': ax3d
         }
         
+        self.sliders_fig, self.sliders_ax = plt.subplots() 
         self.sliders = {}
 
-
         self.lines = lines
+
+        self.termalization = kargs.get('termalization')
+        if not self.termalization:
+            self.termalization = 0
+        self.size = kargs.get('size')
+        if not self.size:
+            self.size = 0.5
         self.color = kargs.get('color')
         self._mark_start_point = kargs.get('mark_start_point')
 
@@ -109,61 +112,73 @@ class Trayectoria3D:
 
 
     def compute_trayectory(self, initial_values):
-        delta = 0
         values = np.zeros([3,self.n_points])
 
-        if not initial_values:
-            initial_values = [random.random(), random.random(), random.random()]
-            delta = 200
-        values[:,0] = np.array(initial_values)
+
+        #! Mejorar estas 5 líneas
+        try:
+            values[:,0] = np.array(initial_values)
+        except:
+            values[:,0] = np.array([random.random(), random.random(), random.random()])
 
         velocity = np.zeros([3,self.n_points])
         
-        for i in range(1, self.n_points + delta):
+        for i in range(1, self.n_points + self.termalization):
             for j in range(self.runge_kutta_freq):
                 new_value = next(self.rungekutta_time_independent(values[:,0]))
-            if i>=delta:
-                values[:,i-delta], velocity[:,i-delta] = new_value
+            if i>=self.termalization:
+                values[:,i-self.termalization], velocity[:,i-self.termalization] = new_value
 
         return values, velocity
         
-    def estabiliza(self):
-        self.posicion_inicial()
+    def estabiliza(self, *args, **kargs):
+        self.posicion_inicial(*args, **kargs)
 
-    def posicion_inicial(self, *args):
+    def posicion_inicial(self, *args, **kargs):
         self.prepare_plot()
-        args = list(args)
-
-        values, velocity = self.compute_trayectory(args)
-
+        self.initial_conditions = list(args)
+        self._calculate_values(*self.initial_conditions, **kargs)
         
+    def _calculate_values(self, *args, **kargs):
+        self.values, self.velocity = self.compute_trayectory(args)
+
+
+    def plot(self, *args, **kargs):
+
+        self._calculate_values(self.initial_conditions)
+
+        cmap = kargs.get('color')
 
         if self.lines:
-            self.ax['3d'].plot3D(*values[:,1:])
-            self.ax['X'].plot(values[1,1:], values[2,1:])
-            self.ax['Y'].plot(values[0,1:], values[2,1:])
-            self.ax['Z'].plot(values[0,1:], values[1,1:])
+            self.ax['3d'].plot3D(*self.values[:,1:])
+            self.ax['X'].plot(self.values[1,1:], self.values[2,1:])
+            self.ax['Y'].plot(self.values[0,1:], self.values[2,1:])
+            self.ax['Z'].plot(self.values[0,1:], self.values[1,1:])
         else:
             def norma(v):
                 suma = 0
                 for i in range(3):
                     suma += v[i]**2
                 return np.sqrt(suma)
-            color = norma(velocity[:])
-            color /= color.max()
+            if self.color == 't':
+                color = np.linspace(0,1, self.velocity.shape[1])
+            else:
+                cmap = self.color
+                color = norma(self.velocity[:])
+                color /= color.max()
 
-            self.ax['3d'].scatter3D(*values, s=0.3, c=color, cmap=self.color)
-            self.ax['X'].scatter(values[1,:], values[2,:], s=0.3, c=color, cmap=self.color)
-            self.ax['Y'].scatter(values[0,:], values[2,:], s=0.3, c=color, cmap=self.color)
-            self.ax['Z'].scatter(values[0,:], values[1,:], s=0.3, c=color, cmap=self.color)
+            self.ax['3d'].scatter3D(*self.values, s=self.size, c=color, cmap=cmap)
+            self.ax['X'].scatter(self.values[1,:], self.values[2,:], s=self.size, c=color, cmap=cmap)
+            self.ax['Y'].scatter(self.values[0,:], self.values[2,:], s=self.size, c=color, cmap=cmap)
+            self.ax['Z'].scatter(self.values[0,:], self.values[1,:], s=self.size, c=color, cmap=cmap)
 
         if self._mark_start_point:
-            self.ax['3d'].scatter3D(*values[:,0])
-            self.ax['X'].scatter(values[1,0], values[2,0])
-            self.ax['Y'].scatter(values[0,0], values[2,0])
-            self.ax['Z'].scatter(values[0,0], values[1,0])
+            self.ax['3d'].scatter3D(*self.values[:,0], size=self.size*2)
+            self.ax['X'].scatter(self.values[1,0], self.values[2,0], size=self.size*2)
+            self.ax['Y'].scatter(self.values[0,0], self.values[2,0], size=self.size*2)
+            self.ax['Z'].scatter(self.values[0,0], self.values[1,0], size=self.size*2)
 
-
+        self.sliders_fig.canvas.draw_idle()
 
     def prepare_plot(self):
 
@@ -181,7 +196,7 @@ class Trayectoria3D:
         #stream = self.ax.quiver(*self._XYZ, *self._dXYZ, length=0.1)#, cmap='Reds')
 
         self.ax['3d'].set_title(f'{self.Titulo}')
-        if self.Rango:
+        if self.Rango is not None:
             self.ax['3d'].set_xlim(self.Rango[0,:])
             self.ax['3d'].set_ylim(self.Rango[1,:])
             self.ax['3d'].set_zlim(self.Rango[2,:])
@@ -191,7 +206,7 @@ class Trayectoria3D:
         self.ax['3d'].grid()
 
         self.ax['X'].set_title(f'{self.Titulo}: YZ')
-        if self.Rango:
+        if self.Rango is not None:
             self.ax['X'].set_xlim(self.Rango[1,:])
             self.ax['X'].set_ylim(self.Rango[2,:])
         self.ax['X'].set_xlabel(f'{self.ylabel}')
@@ -199,7 +214,7 @@ class Trayectoria3D:
         self.ax['X'].grid()
 
         self.ax['Y'].set_title(f'{self.Titulo}: XZ')
-        if self.Rango:
+        if self.Rango is not None:
             self.ax['Y'].set_xlim(self.Rango[0,:])
             self.ax['Y'].set_ylim(self.Rango[2,:])
         self.ax['Y'].set_xlabel(f'{self.xlabel}')
@@ -207,7 +222,7 @@ class Trayectoria3D:
         self.ax['Y'].grid()
 
         self.ax['Z'].set_title(f'{self.Titulo}: XY')
-        if self.Rango:
+        if self.Rango is not None:
             self.ax['Z'].set_xlim(self.Rango[0,:])
             self.ax['Z'].set_ylim(self.Rango[1,:])
         self.ax['Z'].set_xlabel(f'{self.xlabel}')
@@ -220,8 +235,6 @@ class Trayectoria3D:
         Añade un slider sobre un plot ya existente.
         """
         self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
-
-        self.fig.subplots_adjust(bottom=0.25)
 
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
     
