@@ -17,7 +17,7 @@ class Trayectoria3D:
     Computa una trayectoria en un sistema 3D.
     """
     _name_ = 'Trayectoria3D'
-    def __init__(self, dF, *, RangoRepresentacion=None, lines=False, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
+    def __init__(self, dF, *, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
         """
         Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
         También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
@@ -28,7 +28,7 @@ class Trayectoria3D:
         self.dF_args = dF_args                           # Argumentos extras que haya que proporcionar a la función dF
         self.dF = dF                                     # Derivadas de las variables respecto al tiempo
         self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
-        self.dimension = 3
+        self._dimension = 3
 
         #(Polar = False, Titulo = 'Trayectoria', xlabel = 'X', ylabel = 'Y', zlabel = 'Z', numba=False)
 
@@ -48,7 +48,7 @@ class Trayectoria3D:
 
 
         # Variables Runge-Kutta
-        self.h = runge_kutta_step
+        self.runge_kutta_step = runge_kutta_step
         self.runge_kutta_freq = runge_kutta_freq
         self.n_points = n_points
         
@@ -82,7 +82,7 @@ class Trayectoria3D:
         self.sliders = {}
         self.sliders_fig = False
 
-        self.lines = lines
+        self.lines = kargs.get('lines')
 
         self.termalization = kargs.get('termalization')
         if not self.termalization:
@@ -94,7 +94,7 @@ class Trayectoria3D:
         self._mark_start_point = kargs.get('mark_start_point')
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
-        #! elf._X, self._Y = np.meshgrid(np.linspace(*self.Rango[0,:], self.L), np.linspace(*self.Rango[1,:], self.L))   #Crea una malla de tamaño L²
+        #! elf._X, self._Y = np.meshgrid(np.linspace(*self.Rango([)0,:], self.L), np.linspace(*self.Rango[1,:], self.L))   #Crea una malla de tamaño L²
         #self._XYZ = np.meshgrid(*[np.linspace(*r, l) for r, l in zip(self.Rango, self.L)])
 
         #! Falta arreglar esto para tres coordenadas. Me da pereza
@@ -113,10 +113,10 @@ class Trayectoria3D:
             values = np.array(values)
         while True:
             k1 = np.array(self.dF(*(values), **self.dF_args))
-            k2 = np.array(self.dF(*(values+0.5*k1*self.h), **self.dF_args))
-            k3 = np.array(self.dF(*(values+0.5*k2*self.h), **self.dF_args))
-            k4 = np.array(self.dF(*(values+k3*self.h), **self.dF_args))
-            diff = 1/6*self.h*(k1+2*k2+2*k3+k4)
+            k2 = np.array(self.dF(*(values+0.5*k1*self.runge_kutta_step), **self.dF_args))
+            k3 = np.array(self.dF(*(values+0.5*k2*self.runge_kutta_step), **self.dF_args))
+            k4 = np.array(self.dF(*(values+k3*self.runge_kutta_step), **self.dF_args))
+            diff = 1/6*self.runge_kutta_step*(k1+2*k2+2*k3+k4)
             values += diff
             yield values, diff
 
@@ -145,7 +145,7 @@ class Trayectoria3D:
         self.posicion_inicial(*args, **kargs)
 
     def posicion_inicial(self, *args, **kargs):
-        self.prepare_plot()
+        self._prepare_plot()
         self.initial_conditions.append(np.array(args))   
             
         self._calculate_values(*args, **kargs)
@@ -201,7 +201,7 @@ class Trayectoria3D:
         except:
             pass
 
-    def prepare_plot(self):
+    def _prepare_plot(self):
 
         #self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}
 
@@ -308,8 +308,8 @@ class Trayectoria3D:
     def L(self, value):
         self._L=value
         if utils.is_number(value):
-            self._L = [value for _ in range(self.dimension)]
-        while len(self._L)<self.dimension:
+            self._L = [value for _ in range(self._dimension)]
+        while len(self._L)<self._dimension:
             self._L.append(10)
 
 

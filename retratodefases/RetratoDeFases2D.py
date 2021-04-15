@@ -48,12 +48,12 @@ class RetratoDeFases2D:
 
 
     def plot(self, *, color=None):
-        self.dibuja_streamplot(color=color if color else self.color)
+        self._dibuja_streamplot(color=color if color else self.color)
 
         self.fig.canvas.draw_idle()
 
 
-    def dibuja_streamplot(self, *, color=None):
+    def _dibuja_streamplot(self, *, color=None):
 
         self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}
 

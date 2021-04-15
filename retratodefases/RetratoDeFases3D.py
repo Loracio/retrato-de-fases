@@ -53,7 +53,7 @@ class RetratoDeFases3D:
 
 
     def plot(self, *, color=None):
-        self.dibuja_streamplot(color=color if color else self.color)
+        self._dibuja_streamplot(color=color if color else self.color)
 
         #self.ax.scatter(*self._XYZ, color='0.5')
         #self.fig.canvas.draw_idle()
@@ -67,7 +67,7 @@ class RetratoDeFases3D:
         return result**0.5
 
 
-    def dibuja_streamplot(self, *, color=None):
+    def _dibuja_streamplot(self, *, color=None):
 
         self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}
 
