@@ -12,7 +12,7 @@ El [código](#archivos) es abierto, todos podéis descargarlo y utilizarlo. Y ta
 
 # Instalación
 ## Instalación con pip:
-> $ pip install
+> $ pip install retratodefases
 
 ## Instalación con git:
 Abrir una terminal en el directorio deseado:
@@ -24,13 +24,13 @@ Guardar y descomprimir el archivo en el directorio deseado.
 
 
 # Ejemplos de uso
-- ### [ejemplos.ipynb](ejemplos.ipynb):
+- ### [ejemplos.ipynb](examples/ejemplos.ipynb):
 Ejemplos para ver cómo se utilizan las clases de RetratoDeFases2D.
 
-- ### [ejemplosSliders.py](ejemplosSliders.py) :
+- ### [ejemplosSliders.py](examples/ejemplosSliders.py) :
 Contiene ejemplos de plots con sliders para retratos de fases 2D.
 
-- ### [ejemploTrayectoria.py](ejemploTrayectoria.py):
+- ### [ejemploTrayectoria.py](examples/ejemploTrayectoria.py):
 Contiene ejemplos de trayectorias 3D con y sin sliders.
 
 
@@ -45,7 +45,7 @@ Esto importará las clases que debe usar el usuario, por el momento son:
 - [RetratoDeFases3D](.readme/retratodefases3d.md)
 - [Trayectoria3D](.readme/trayectoria3d.md)
 
-Todas ellas comparten un mismo tipo de primer argumento: una función que dadas unas coordenadas te devuelve la derivada de cada coordenada en ese punto:
+Todas ellas comparten un mismo tipo de primer argumento: una función que dadas unas coordenadas te devuelve la derivada de cada coordenada en ese punto.
 # [Función dF](.readme/dFfuncion.md)
 ```python
 def dF(x,y):

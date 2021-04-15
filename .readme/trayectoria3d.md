@@ -3,29 +3,29 @@
 
 Clase que permite representar trayectorias dada una función [dF](../README.md) con 3 parámetros obligatorios.
 
-| Atributos          | Métodos                                                                 |
-| ------------------ | ----------------------------------------------------------------------- |
-| dF                 | [posicion_inicial          ](#trayectoria3dposicion_inicial)            |
-| dF_args            | [estbiliza                 ](#trayectoria3destabiliza)                  |
-| Rango              | [add_slider                ](#trayectoria3dadd_slider)                  |
-| values             | [plot                      ](#trayectoria3dplot)                        |
-| velocity           | [compute_trayectory        ](#trayectoria3dcompute_trayectory)          |
-| initial_conditions | [rungekutta_time_independet](#trayectoria3drungekutta_time_independent) |
-| runge_kutta_step   |                                                                         |
-| runge_kutta_freq   |                                                                         |
-| n_points           |                                                                         |
-| Titulo             |                                                                         |
-| xlabel             |                                                                         |
-| ylabel             |                                                                         |
-| zlabel             |                                                                         |
-| fig                |                                                                         |
-| ax                 |                                                                         |
-| sliders            |                                                                         |
-| lines              |                                                                         |
-| termalization      |                                                                         |
-| color              |                                                                         |
+| Atributos          | Métodos                                                                  |
+| ------------------ | ------------------------------------------------------------------------ |
+| dF                 | [posicion_inicial           ](#trayectoria3dposicion_inicial)            |
+| dF_args            | [estabiliza                 ](#trayectoria3destabiliza)                  |
+| Rango              | [add_slider                 ](#trayectoria3dadd_slider)                  |
+| values             | [plot                       ](#trayectoria3dplot)                        |
+| velocity           | [compute_trayectory         ](#trayectoria3dcompute_trayectory)          |
+| initial_conditions | [rungekutta_time_independent](#trayectoria3drungekutta_time_independent) |
+| runge_kutta_step   |                                                                          |
+| runge_kutta_freq   |                                                                          |
+| n_points           |                                                                          |
+| Titulo             |                                                                          |
+| xlabel             |                                                                          |
+| ylabel             |                                                                          |
+| zlabel             |                                                                          |
+| fig                |                                                                          |
+| ax                 |                                                                          |
+| sliders            |                                                                          |
+| lines              |                                                                          |
+| termalization      |                                                                          |
+| color              |                                                                          |
 
-### **Parametros**
+### **Parámetros**
 * **dF** (función [dF](dFfuncion.md)) - función que devuelve las derivadas de cada coordenada.
 
 * **dF_args** (dict) - diccionario con los valores que se quieran dar a la función **dF**.
@@ -46,7 +46,7 @@ Clase que permite representar trayectorias dada una función [dF](../README.md) 
 
 * **runge_kutta_spet** (float) - diferencial de tiempo del método runge-kutta de orden 4.
 
-* **runge_kutta-freq** (int) - cantidad de puntos calculados entre posiciones guardadas.
+* **runge_kutta_freq** (int) - cantidad de puntos calculados entre posiciones guardadas.
 
 * **Titulo** (str) -  cadena de carácteres que aparece como título de la representación. Su valor predefinido es `'Retrato de Fases'`.
   
@@ -68,12 +68,12 @@ El parámetro `posicion` debe ser una lista o un ndarray de 3 elementos.
 
 ## *Trayectoria3D*.estabiliza
 > *Trayectoria3D*.**estabiliza**(**posicion*)
-> 
+
 El parámetro `posición` es opcional. En el caso de que no se introduzca, se tomará un número entre 0 y 1 para cada coordenada aleatoriamente.
 
 ## *Trayectoria3D*.add_slider
 > *Trayectoria3D*.**add_slider**(*param_name, \*, valinit=None, valstep=0.1, valinterval=10*)
-> 
+
 Añade un [slider](slider.md) que permite cambiar el valor de una variable en tiempo de ejecucion del programa.
 
 

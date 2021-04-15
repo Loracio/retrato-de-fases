@@ -19,7 +19,7 @@ Clase que permite representar retratos de fase dada una función [dF](../README.
 | fig       |                                           |
 | ax        |                                           |
 
-### **Parametros**
+### **Parámetros**
 * **dF** (función [dF](dFfuncion.md)) - función que devuelve las derivadas de cada coordenada.
 
 * **dF_args** (dict) - diccionario con los valores que se quieran dar a la función **dF**.
