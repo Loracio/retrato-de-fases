@@ -10,68 +10,67 @@ El [código](#archivos) es abierto, todos podéis descargarlo y utilizarlo. Y ta
 - Víctor Loras Herrero
 - Unai Lería Fortea
 
-## Archivos
-- [retratodefases](retratodefases): Es el fichero que contiene todo lo necesario para usar la librería: clases, excepciones, funciones que se usan internamente...
-- [ejemplos.ipynb](ejemplos.ipynb): Ejemplos para ver cómo se utilizan las clases del módulo [retratodefases](retratodefases)
-- [ejemplosSliders.py](ejemplosSliders.py): Contiene ejemplos de plots con sliders.
-- [README.md](README.md): Es lo que estás leyendo ahora mismo.
-- [gitignore](.gitignore): sirve para decirle a Git qué archivos o directorios completos debe ignorar y no subir al repositorio de código. Como dice su nombre: ignóralo.
+# Instalación
+## Instalación con pip:
+> $ pip install retratodefases
+
+## Instalación con git:
+Abrir una terminal en el directorio deseado:
+> $ git clone https://github.com/Loracio/retrato-de-fases
+
+## Instalación manual:
+Visita la página de [retrato-de-fases](https://github.com/Loracio/retrato-de-fases) en github. Pulsar el botón verde con el texto *Codigo* y descargar en forma de zip.
+Guardar y descomprimir el archivo en el directorio deseado.
+
+
+# Ejemplos de uso
+- ### [ejemplos.ipynb](examples/ejemplos.ipynb):
+Ejemplos para ver cómo se utilizan las clases de RetratoDeFases2D.
+
+- ### [ejemplosSliders.py](examples/ejemplosSliders.py) :
+Contiene ejemplos de plots con sliders para retratos de fases 2D.
+
+- ### [ejemploTrayectoria.py](examples/ejemploTrayectoria.py):
+Contiene ejemplos de trayectorias 3D con y sin sliders.
+
 
 # Instrucciones para utilizar la librería
-Simplemente, deberemos importar la librería escribiendo la ruta hasta ella. De momento, la librería contiene únicamente la clase RetratoDeFases2D, que sirve para realizar retratos de fases de sistemas bidimensionales. 
+Simplemente, deberemos importar la librería:
+```python
+import retratodefases
+from retratodefases import *
+```
+Esto importará las clases que debe usar el usuario, por el momento son:
+- [RetratoDeFases2D](.readme/retratodefases2d.md)
+- [RetratoDeFases3D](.readme/retratodefases3d.md)
+- [Trayectoria3D](.readme/trayectoria3d.md)
 
-La idea de esta clase, es pasarle una función que devuelva las expresiones para las derivadas de dos parámetros (para que calcule los flujos en el espacio de fases). Será de la forma:
-
+Todas ellas comparten un mismo tipo de primer argumento: una función que dadas unas coordenadas te devuelve la derivada de cada coordenada en ese punto.
+# [Función dF](.readme/dFfuncion.md)
 ```python
 def dF(x,y):
-  return expresionX, expresionY
+  return expresionX  ,  expresionY
 ```
-Donde también se pueden pasar variables extras en forma de diccionario. Por ejemplo para un oscilador armónico de frecuencia `w` (con valor estandar 1):
+
+También se pueden pasar variables extras en forma de diccionario. Por ejemplo para un oscilador armónico de frecuencia `w` (con valor estandar 1):
 ```python
-def dF(x,y, *, w=1):
+def oscilador(x,y, *, w=1):
   return expresionX, expresionY
 ```
-También deberemos indicar el rango de representación que queremos que se calcule. Esto puede indicarse de tres maneras:
-
-1. Para representar sobre un dominio 'cuadrado', pasamos sólo el argumento `[limiteInferior , limiteSuperior]`. De esta manera los dos ejes tendrán el mismo rango.
-
-2. Si queremos que tengan distinto rango, deberemos pasar el argumento de la siguiente manera:
-`[[limiteInferiorEjeX, limiteSuperiorEjeX], [limiteInferiorEjeY, limiteSuperiorEjeY]]`
-
-3. Si queremos representar desde 0 hasta cierto número, sólo hará falta poner ese número (también vale si es negativo). Obviamente, no podemos poner solo cero, pues sería un rango nulo.
-
-Con estos dos argumentos, podemos inicializar un objeto de la clase `RetratoDeFases2D`. A continuación, se detallan los distintos argumentos opcionales:
-
-* **Polar** : booleano con valor `False` por defecto. Se debe pasar como argumento a la función cuando los inputs de nuestra función `dF` se den en coordenadas polares.
-
-* **Densidad** : controla la cercanía de las líneas de flujo en el espacio de fases. Su valor predefinido es 1. Aumentar mucho este valor aumenta considerablemente el tiempo de computación del retrato de fases.
-
-* **LongitudMalla** : para calcular el retrato de fases, se crea una malla que depende del rango de representación dado, sobre la cual se calcula el campo de velocidades. El valor de esta variable es el número de puntos en la malla, multiplicado por la diferencia entre el rango inferior y el superior. El valor predefinido de esta variable es 10.
-
-* **Titulo** : cadena de carácteres que aparece como título de la representación. Su valor predefinido es `'Retrato de Fases'`.
-
-* **xlabel** : cadena de carácteres que aparece como título del eje X en la representación. Su valor predefinido es `'X'`.
-
-* **ylabel** : cadena de carácteres que aparece como título del eje Y en la representación. Su valor predefinido es $\dot{X}$.
 
 
-Una vez conocemos los argumentos de la clase, pasemos a los métodos de clase.
+# [RetratoDeFases2D](.readme/retratodefases2d.md)
+> *class* retratodefases.**RetratoDeFases2D**(*dF, RangoRepresentacion, \*, LongitudMalla=10, dF_args={}, Densidad=1, Polar=False, \*\*opciones*)
 
-* **plot** : toma como argumentos los parámetros de la clase, es decir, no es necesario pasarle nada. Como argumento opcional toma el parámetro `color` que toma los valores de los mapas de colores indicados en [este enlace](https://matplotlib.org/stable/gallery/color/colormap_reference.html). 
-
-* **add_slider** : añade un *slider* que permite cambiar el valor de una variable en tiempo de ejecucion del programa. Toma los siguientes argumentos:
-
-**Obligatorios**:
-* Cadena de texto con el nombre del parámetro a incluir en la barra desplazable, que debe coincidir con el nombre del parámetro en el diccionario de la función `dF`.
-
-**Opcionales**:
-* **valinit** : indica el valor inicial que toma la variable. Su valor predefinido es la mitad del valor de la variable.
-
-* **valstep** : valor mínimo que varía la variable. Su valor predefinido es 0,1.
-
-* **valinterval** : intervalo entre el que varía la variable. Su valor predefinido es `[-10, 10]`
+Permite representar un retrato de fases en dos dimensiones de una función [dF](.readme/dFfuncion.md) de 2 parámetros obligatorios.
 
 
-De momento, estas son las funcionalidades que ofrece la librería. Pueden verse distintos ejemplos de uso en [ejemplos.ipynb](ejemplos.ipynb) y en [ejemplosSliders.py](ejemplosSliders.py)
- 
- 
+# [RetratoDeFases3D](.readme(retratodefases3d.md))
+> *class* retratodefases.**RetratoDeFases2D**(*dF, RangoRepresentacion, \*, LongitudMalla=10, dF_args={}, Densidad=1, Polar=False, \*\*opciones*)
+
+Permite representar un retrato de fases en tres dimensiones de una función [dF](.readme/dFfuncion.md) de 3 parámetros obligatorios.
+
+# [Trayectoria3D](.readme/trayectoria3d.md)
+> *class* retratodefases.**Trayectoria3D**(*dF, \*, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, \*\*opciones*)
+
+Permite representar trayectorias tridimensionales de una función [dF](.readme/dFfuncion.md) de 3 parámetros obligatorios.

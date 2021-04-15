@@ -2,7 +2,7 @@ from retratodefases import *
 import matplotlib.pyplot as plt
 
 """
-Ejemplo 2 con Sliders para 2 parámetros
+Ejemplo 1 con Sliders para 2 parámetros
 """
 
 def dFPolares(r, θ, *, μ=0.5,η=0):
@@ -17,7 +17,7 @@ RetratoPolares.plot()
 RetratoPolares.plot()
 
 """
-Ejemplo 3 con Sliders para 4 parámetros
+Ejemplo 2 con Sliders para 4 parámetros
 """
 
 def dFLoveAffairs(R, J, *, a=1, b=0, c=-1, d=1):
@@ -33,7 +33,7 @@ RetratoLoveAffairs.add_slider('a', valinit=1)
 RetratoLoveAffairs.plot()
 
 """
-Ejemplo 5 con Sliders para 4 parámetros: a, b, c y d
+Ejemplo 3 con Sliders para 4 parámetros: a, b, c y d
 """
 
 def dFCentroNoLineal(x, y, *, a=1, b=1, c =1, d=1):
