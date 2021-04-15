@@ -31,6 +31,10 @@ class Trayectoria3D:
 
         #(Polar = False, Titulo = 'Trayectoria', xlabel = 'X', ylabel = 'Y', zlabel = 'Z', numba=False)
 
+        self.values = []
+        self.velocity = []
+        self.initial_conditions = []
+
         try: 
             if kargs['numba']:
                 import numba as _numba
@@ -74,8 +78,8 @@ class Trayectoria3D:
             '3d': ax3d
         }
         
-        self.sliders_fig, self.sliders_ax = plt.subplots() 
         self.sliders = {}
+        self.sliders_fig = False
 
         self.lines = lines
 
@@ -95,6 +99,10 @@ class Trayectoria3D:
         #! Falta arreglar esto para tres coordenadas. Me da pereza
         #if self.Polar:   
         #    self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
+
+    def _create_sliders_plot(self):
+        if not isinstance(self.sliders_fig, plt.Figure):
+            self.sliders_fig, self.sliders_ax = plt.subplots() 
 
 
     def rungekutta_time_independent(self, initial_values):
@@ -136,49 +144,60 @@ class Trayectoria3D:
 
     def posicion_inicial(self, *args, **kargs):
         self.prepare_plot()
-        self.initial_conditions = list(args)
-        self._calculate_values(*self.initial_conditions, **kargs)
+        self.initial_conditions.append(np.array(args))   
+            
+        self._calculate_values(*args, **kargs)
         
     def _calculate_values(self, *args, **kargs):
-        self.values, self.velocity = self.compute_trayectory(args)
+        values, velocity = self.compute_trayectory(args)
+        self.values.append(values)
+        self.velocity.append(velocity)
 
 
     def plot(self, *args, **kargs):
 
-        self._calculate_values(self.initial_conditions)
+        if not self.lines:
+            self._calculate_values(self.initial_conditions)
 
         cmap = kargs.get('color')
 
-        if self.lines:
-            self.ax['3d'].plot3D(*self.values[:,1:])
-            self.ax['X'].plot(self.values[1,1:], self.values[2,1:])
-            self.ax['Y'].plot(self.values[0,1:], self.values[2,1:])
-            self.ax['Z'].plot(self.values[0,1:], self.values[1,1:])
-        else:
-            def norma(v):
-                suma = 0
-                for i in range(3):
-                    suma += v[i]**2
-                return np.sqrt(suma)
-            if self.color == 't':
-                color = np.linspace(0,1, self.velocity.shape[1])
+        for val, vel in zip(self.values, self.velocity):
+            if self.lines:
+
+                    self.ax['3d'].plot3D(*val[:,1:])
+                    self.ax['X'].plot(val[1,1:], val[2,1:])
+                    self.ax['Y'].plot(val[0,1:], val[2,1:])
+                    self.ax['Z'].plot(val[0,1:], val[1,1:])
             else:
-                cmap = self.color
-                color = norma(self.velocity[:])
-                color /= color.max()
+                def norma(v):
+                    suma = 0
+                    for i in range(3):
+                        suma += v[i]**2
+                    return np.sqrt(suma)
+                if self.color == 't':
+                    color = np.linspace(0,1, vel.shape[1])
+                else:
+                    cmap = self.color
+                    color = norma(vel[:])
+                    color /= color.max()
 
-            self.ax['3d'].scatter3D(*self.values, s=self.size, c=color, cmap=cmap)
-            self.ax['X'].scatter(self.values[1,:], self.values[2,:], s=self.size, c=color, cmap=cmap)
-            self.ax['Y'].scatter(self.values[0,:], self.values[2,:], s=self.size, c=color, cmap=cmap)
-            self.ax['Z'].scatter(self.values[0,:], self.values[1,:], s=self.size, c=color, cmap=cmap)
+                self.ax['3d'].scatter3D(*val, s=self.size, c=color, cmap=cmap)
+                self.ax['X'].scatter(val[1,:], val[2,:], s=self.size, c=color, cmap=cmap)
+                self.ax['Y'].scatter(val[0,:], val[2,:], s=self.size, c=color, cmap=cmap)
+                self.ax['Z'].scatter(val[0,:], val[1,:], s=self.size, c=color, cmap=cmap)
 
-        if self._mark_start_point:
-            self.ax['3d'].scatter3D(*self.values[:,0], size=self.size*2)
-            self.ax['X'].scatter(self.values[1,0], self.values[2,0], size=self.size*2)
-            self.ax['Y'].scatter(self.values[0,0], self.values[2,0], size=self.size*2)
-            self.ax['Z'].scatter(self.values[0,0], self.values[1,0], size=self.size*2)
+            if self._mark_start_point:
+                self.ax['3d'].scatter3D(*val[:,0], size=self.size+1, c=[0])
+                self.ax['X'].scatter(val[1,0], val[2,0], size=self.size+1, c=[0])
+                self.ax['Y'].scatter(val[0,0], val[2,0], size=self.size+1, c=[0])
+                self.ax['Z'].scatter(val[0,0], val[1,0], size=self.size+1, c=[0])
 
-        self.sliders_fig.canvas.draw_idle()
+        for fig in self.fig.values():
+            fig.canvas.draw_idle()
+        try:
+            self.sliders_fig.canvas.draw_idle()
+        except:
+            pass
 
     def prepare_plot(self):
 
@@ -234,6 +253,7 @@ class Trayectoria3D:
         """
         Añade un slider sobre un plot ya existente.
         """
+        self._create_sliders_plot()
         self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
 
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
