@@ -16,6 +16,7 @@ class Trayectoria3D:
     """
     Computa una trayectoria en un sistema 3D.
     """
+    _name_ = 'Trayectoria3D'
     def __init__(self, dF, *, RangoRepresentacion=None, lines=False, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
         """
         Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
@@ -103,6 +104,7 @@ class Trayectoria3D:
     def _create_sliders_plot(self):
         if not isinstance(self.sliders_fig, plt.Figure):
             self.sliders_fig, self.sliders_ax = plt.subplots() 
+            self.sliders_ax.set_visible(False)
 
 
     def rungekutta_time_independent(self, initial_values):

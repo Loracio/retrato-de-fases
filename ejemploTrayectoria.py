@@ -1,7 +1,7 @@
 from retratodefases import *
 import matplotlib.pyplot as plt
 
-if True:
+if False:
     """
     Ejemplo 1 Lorentz: dos trayectorias separadas ligeramente
     """
@@ -17,7 +17,7 @@ if True:
     plt.show()
 
 
-if True:
+if False:
     """
     Ejemplo 2 Lorentz: una trayectoria coloreada en función del tiempo. Usando numba para que funcione más rápido
     """

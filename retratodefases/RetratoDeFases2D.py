@@ -13,6 +13,7 @@ class RetratoDeFases2D:
     """
     Hace un retrato de fases de un sistema 2D.
     """
+    _name_ = 'RetratoDeFases2D'
     def __init__(self, dF, RangoRepresentacion, *, LongitudMalla=10, dF_args={}, Densidad = 1, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = r"$\dot{X}$", color='rainbow'):
         """
         Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
