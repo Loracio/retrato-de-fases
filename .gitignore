@@ -27,6 +27,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+#Por si acaso
+retratodefases.egg-info
+retratodefases-exe
+requirements.txt
+setup.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
