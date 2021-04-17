@@ -91,9 +91,6 @@ class Trayectoria3D:
         self.color = kargs.get('color')
         self._mark_start_point = kargs.get('mark_start_point')
 
-        #! Falta arreglar esto para tres coordenadas. Me da pereza
-        #if self.Polar:   
-        #    self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
 
     def _create_sliders_plot(self):
         if not isinstance(self.sliders_fig, plt.Figure):
@@ -213,20 +210,6 @@ class Trayectoria3D:
             pass
 
     def _prepare_plot(self):
-
-        #self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}
-
-        #if self.Polar:
-        #    self._transformacionPolares()
-        #else:
-        #    #! self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args)
-        #    self._dXYZ = self.dF(*self._XYZ, **self.dF_args)
-        #colores = (self._XYZ[0]**2+self._XYZ[1]**2+self._XYZ[2]**2)**(0.5)
-        #colores_p = self.norma()
-        #colores_norm = matplotlib.colors.Normalize(vmin=colores_p.min(), vmax=colores_p.max())
-        #! stream = self.ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores_p, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
-        #stream = self.ax.quiver(*self._XYZ, *self._dXYZ, length=0.1)#, cmap='Reds')
-
         self.ax['3d'].set_title(f'{self.Titulo}')
         if self.Rango is not None:
             self.ax['3d'].set_xlim(self.Rango[0,:])
@@ -262,14 +245,6 @@ class Trayectoria3D:
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
     
     
-    def _transformacionPolares(self):
-        """
-        Devuelve la expresión del campo de velocidades en cartesianas, si la expresión del sistema viene dada en polares
-        """
-        self._dR, self._dTheta = self.dF(self._R, self._Theta, **self.dF_args)
-        self._dX, self._dY = self._dR*np.cos(self._Theta) - self._R*np.sin(self._Theta)*self._dTheta, self._dR*np.sin(self._Theta)+self._R*np.cos(self._Theta)*self._dTheta
-
-
 
     # Funciones para asegurarse que los parametros introducidos son válidos
     @property

@@ -37,7 +37,6 @@ class RetratoDeFases3D:
 
 
         # Variables para la representación
-        #self.fig, self.ax = plt.subplots()
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(projection='3d')
         self.color = color
@@ -54,9 +53,6 @@ class RetratoDeFases3D:
 
     def plot(self, *, color=None):
         self._dibuja_streamplot(color=color if color else self.color)
-
-        #self.ax.scatter(*self._XYZ, color='0.5')
-        #self.fig.canvas.draw_idle()
 
 
     def norma(self):
@@ -75,21 +71,12 @@ class RetratoDeFases3D:
             self._transformacionEsfericas()
         else:
             self._dXYZ = self.dF(*self._XYZ, **self.dF_args)
-        #colores = (self._XYZ[0]**2+self._XYZ[1]**2+self._XYZ[2]**2)**(0.5)
-        #colores_p = self.norma()
-        #colores_norm = matplotlib.colors.Normalize(vmin=colores_p.min(), vmax=colores_p.max())
         stream = self.ax.quiver(*self._XYZ, *self._dXYZ, length=0.01)
-        #* Las siguientes líneas son para que el plot saliera 'proporcionado' en 2D, no he hecho plots 3D en mi vida, así que habrá que ver cómo se hace
-        #self.ax.set_xlim(self.Rango[0,:])
-        #self.ax.set_ylim(self.Rango[1,:])
-        #x0,x1 = self.ax.get_xlim()
-        #y0,y1 = self.ax.get_ylim()
-        #self.ax.set_aspect(abs(x1-x0)/abs(y1-y0))
         self.ax.set_title(f'{self.Titulo}')
         self.ax.set_xlabel(f'{self.xlabel}')
         self.ax.set_ylabel(f'{self.ylabel}')
         self.ax.set_zlabel(f'{self.zlabel}')
-        self.ax.grid() #? ¿Es válido en 3D?
+        self.ax.grid()
         
         return stream
 
