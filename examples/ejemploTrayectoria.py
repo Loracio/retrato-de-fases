@@ -1,7 +1,7 @@
 from retratodefases import *
 import matplotlib.pyplot as plt
 
-if True:
+if False:
     """
     Ejemplo 1 Lorentz: dos trayectorias separadas ligeramente
     """
@@ -17,7 +17,7 @@ if True:
     plt.show()
 
 
-if True:
+if False:
     """
     Ejemplo 2 Lorentz: una trayectoria coloreada en función del tiempo. Usando numba para que funcione más rápido
     """
@@ -41,6 +41,6 @@ if True:
     
     c = Trayectoria3D(Rossler, RangoRepresentacion=[20, 20,[0,40]], dF_args={'s':0.2, 'r':5.7, 'b':0.2}, n_points=30000, numba=True, termalization=2000, size=4)
     c.add_slider('r', valinit=5.7, valinterval=[0,10])
-    c.estabiliza()
+    c.termaliza()
     c.plot()
     plt.show()

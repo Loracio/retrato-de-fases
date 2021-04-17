@@ -14,10 +14,10 @@ class Slider():
         valinterval = np.array(valinterval)
  
         if 'Trayectoria' in self.retrato._name_: 
-            self.ax = self.retrato.sliders_fig.add_axes([0.25, 0.88 - 0.05*len(self.retrato.sliders), 0.5, 0.05])
+            self.ax = self.retrato.sliders_fig.add_axes([0.25, 0.88 - 0.05*len(self.retrato.sliders), 0.4, 0.05])
 
         if 'RetratoDeFases' in self.retrato._name_:
-            self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.5, 0.03])
+            self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.4, 0.03])
 
         
         aux = {'valinit':valinit} if self.value else {}

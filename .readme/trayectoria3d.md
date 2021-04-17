@@ -6,7 +6,7 @@ Clase que permite representar trayectorias dada una función [dF](../README.md) 
 | Atributos          | Métodos                                                                  |
 | ------------------ | ------------------------------------------------------------------------ |
 | dF                 | [posicion_inicial           ](#trayectoria3dposicion_inicial)            |
-| dF_args            | [estabiliza                 ](#trayectoria3destabiliza)                  |
+| dF_args            | [termaliza                 ](#trayectoria3dtermaliza)                  |
 | Rango              | [add_slider                 ](#trayectoria3dadd_slider)                  |
 | values             | [plot                       ](#trayectoria3dplot)                        |
 | velocity           | [compute_trayectory         ](#trayectoria3dcompute_trayectory)          |
@@ -66,8 +66,8 @@ Clase que permite representar trayectorias dada una función [dF](../README.md) 
 El parámetro `posicion` debe ser una lista o un ndarray de 3 elementos.
 
 
-## *Trayectoria3D*.estabiliza
-> *Trayectoria3D*.**estabiliza**(**posicion*)
+## *Trayectoria3D*.termaliza
+> *Trayectoria3D*.**termaliza**(**posicion*)
 
 El parámetro `posición` es opcional. En el caso de que no se introduzca, se tomará un número entre 0 y 1 para cada coordenada aleatoriamente.
 
