@@ -8,6 +8,7 @@ import numpy as np
 from matplotlib import cm
 
 from . import sliders
+from . import rungekutta
 from .exceptions import *
 from .utils import utils
 
