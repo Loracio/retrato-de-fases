@@ -70,6 +70,12 @@ Permite representar un retrato de fases en dos dimensiones de una función [dF](
 
 Permite representar un retrato de fases en tres dimensiones de una función [dF](.readme/dFfuncion.md) de 3 parámetros obligatorios.
 
+
+# [Trayectoria2D](.readme/trayectoria2d.md)
+> *class* retratodefases.**Trayectoria2D**(*dF, \*, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, \*\*opciones*)
+
+Permite representar trayectorias bidimensional de una función [dF](.readme/dFfuncion.md) de 2 parámetros obligatorios.
+
 # [Trayectoria3D](.readme/trayectoria3d.md)
 > *class* retratodefases.**Trayectoria3D**(*dF, \*, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, \*\*opciones*)
 

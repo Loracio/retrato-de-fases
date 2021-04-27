@@ -1,25 +1,24 @@
-# Trayectoria3D
-> *class* retratodefases.**Trayectoria3D**(*dF, \*, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, \*\*kargs*)
+# Trayectoria2D
+> *class* retratodefases.**Trayectoria2D**(*dF, \*, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, \*\*kargs*)
 
 Hereda de [trajectory](trajectory.md)
 
-Permite representar trayectorias dada una función [dF](../README.md) con 3 parámetros obligatorios.
+Permite representar trayectorias dada una función [dF](../README.md) con 2 parámetros obligatorios.
 
 | Atributos          | Métodos                                                                  |
 | ------------------ | ------------------------------------------------------------------------ |
-| dF                 | [posicion_inicial           ](#trayectoria3dposicion_inicial)            |
-| dF_args            | [termaliza                 ](#trayectoria3dtermaliza)                  |
-| Rango              | [add_slider                 ](#trayectoria3dadd_slider)                  |
-| values             | [plot                       ](#trayectoria3dplot)                        |
-| velocity           | [compute_trayectory         ](#trayectoria3dcompute_trayectory)          |
-| initial_conditions | [rungekutta_time_independent](#trayectoria3drungekutta_time_independent) |
+| dF                 | [posicion_inicial           ](#trayectoria2dposicion_inicial)            |
+| dF_args            | [termaliza                 ](#trayectoria2dtermaliza)                  |
+| Rango              | [add_slider                 ](#trayectoria2dadd_slider)                  |
+| values             | [plot                       ](#trayectoria2dplot)                        |
+| velocity           | [compute_trayectory         ](#trayectoria2dcompute_trayectory)          |
+| initial_conditions | [rungekutta_time_independent](#trayectoria2drungekutta_time_independent) |
 | runge_kutta_step   |                                                                          |
 | runge_kutta_freq   |                                                                          |
 | n_points           |                                                                          |
 | Titulo             |                                                                          |
 | xlabel             |                                                                          |
 | ylabel             |                                                                          |
-| zlabel             |                                                                          |
 | fig                |                                                                          |
 | ax                 |                                                                          |
 | sliders            |                                                                          |
@@ -56,43 +55,41 @@ Permite representar trayectorias dada una función [dF](../README.md) con 3 par�
   
 * **ylabel** (str) -  cadena de carácteres que aparece como título del eje Y en la representación. Su valor predefinido es `'Y'`.
 
-* **zlabel** (str) -  cadena de carácteres que aparece como título del eje Z en la representación. Su valor predefinido es `'Z'`.
-
 * **mark_start_point** (bool) - marka la posición inicial con un punto de mayor tamaño.
 
 
 # Métodos
-## *Trayectoria3D*.posicion_inicial
-> *Trayectoria3D*.**posicion_inicial**(**posicion*)
+## *Trayectoria2D*.posicion_inicial
+> *Trayectoria2D*.**posicion_inicial**(**posicion*)
 
 El parámetro `posicion` debe ser una lista o un ndarray de 3 elementos.
 
 
-## *Trayectoria3D*.termaliza
-> *Trayectoria3D*.**termaliza**(**posicion*)
+## *Trayectoria2D*.termaliza
+> *Trayectoria2D*.**termaliza**(**posicion*)
 
 El parámetro `posición` es opcional. En el caso de que no se introduzca, se tomará un número entre 0 y 1 para cada coordenada aleatoriamente.
 
-## *Trayectoria3D*.add_slider
-> *Trayectoria3D*.**add_slider**(*param_name, \*, valinit=None, valstep=0.1, valinterval=10*)
+## *Trayectoria2D*.add_slider
+> *Trayectoria2D*.**add_slider**(*param_name, \*, valinit=None, valstep=0.1, valinterval=10*)
 
 Añade un [slider](slider.md) que permite cambiar el valor de una variable en tiempo de ejecucion del programa.
 
 
-## *Trayectoria3D*.plot
-> *Trayectoria3D*.**plot**
+## *Trayectoria2D*.plot
+> *Trayectoria2D*.**plot**
 
 Toma como argumentos los parámetros de la clase, es decir, no es necesario pasarle nada. Como argumento opcional toma el parámetro `color` que toma los valores de los mapas de colores indicados en [este enlace](https://matplotlib.org/stable/gallery/color/colormap_reference.html). 
 
 
-## *Trayectoria3D*.compute_trayectory
-> *Trayectoria3D*.**compute_trayectory**(*initial_values*)
+## *Trayectoria2D*.compute_trayectory
+> *Trayectoria2D*.**compute_trayectory**(*initial_values*)
 
 Dado una posición inicial en 3 coordenadas `initial_values` te devuelve una tupla con dos listas: posiciones y diferencias entre posiciones sucesivas. Devuelve `n_points` puntos.
 
 
-## *Trayectoria3D*.rungekutta_time_independent
-> *Trayectoria3D*.**rungekutta_time_independent**(*initial_values*)
+## *Trayectoria2D*.rungekutta_time_independent
+> *Trayectoria2D*.**rungekutta_time_independent**(*initial_values*)
 
 Generador que dado una posición inicial  `initial_values`, devuelve el siguiente punto.
 
