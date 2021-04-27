@@ -123,7 +123,7 @@ class trajectory:
             val_init = trajectory.initial_value
             
             if self.lines:
-                self._plot_lines(val, valinit)
+                self._plot_lines(val, val_init)
                     
             else:
                 def norma(v):
@@ -141,7 +141,7 @@ class trajectory:
                 self._scatter_trajectory(val, color, cmap)
 
             if self._mark_start_point:
-                self._scatter_start_point()
+                self._scatter_start_point(val_init)
                 
         for fig in self.fig.values():
             if self.lines:
