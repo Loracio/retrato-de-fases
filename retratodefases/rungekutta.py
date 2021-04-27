@@ -5,54 +5,70 @@ from .utils import utils
 from random import random
 
 class RungeKutta():
-    def __init__(self, portrait, dF, dimension, dt=0.1, max_values, *, dF_args=None, initial_values=None):
+    def __init__(self, portrait, dF, dimension, max_values, *, dt=0.1, dF_args=None, initial_values: list=None, thermalization=0):
         self.portrait = portrait
         self.dF = dF
         self.dimension = dimension
         self.dt = dt
+        self.max_values=max_values
+        self.thermalization=thermalization
         
         self.dF_args = dF_args
-        self.initial_value = initial_values
+        self.initial_value = np.array(tuple(map(float,initial_values)))
         if not self.initial_value:
             aux = [random() for i in range(dimension)]
             self.initial_value = np.array(aux)
+        
+        self.position = self.initial_value.copy()
+        self.positions = self._create_values_array()
+        self.velocities = self._create_values_array()
+            
  
     @classmethod
-    def compute_all(cls, portrait, dF, dimension, dt=0.1, dF_args, initial_values, max_values, save_freq=1, thermalization=0):
+    def instance_and_compute_all(cls, portrait, dF, dimension, dF_args, initial_values, max_values, save_freq=1, dt=0.1, thermalization=0):
         '''
         Creates a RungeKutta instance and computes `max_values` pairs of position and velocity every `save_freq`.
         If `thermalization` is given it saves the pairs from that point forward.
         '''
         
-        instance = cls(portrait, dF, dimension, dt, dF_args=dF_args, initial_values=initial_values)
+        instance = cls(portrait, dF, dimension, dt=dt, dF_args=dF_args, initial_values=initial_values)
         instance.max_values = max_values
         instance.save_freq = save_freq
-        instance.termalization = termalization
+        instance.thermalization = thermalization
         
         instance.positions = instance._create_values_array()
         instance.velocities = instance._create_values_array()
         
-        for  i in range(self.termalization):
-            instance._next()
-        
-        instance.Nnext(instance.max_values)
+        instance.compute_all()
         return instance
         
-    def _create_values_array(self, *, max_values=None):
-        if max_values:
+    
+    def compute_all(self, *, save_freq=1):
+        '''
+        Computes `RungeKutta.max_values` and saves them. If `save_freq` is given it saves them every that amount.
+        If not, it saves them every `RungeKutta.save_freq` times, 1 by default.
+        '''
+        for  i in range(self.thermalization):
+            self._next()
+
+        self.Nnext(self.max_values, save_freq=save_freq)
+
+    
+    def _create_values_array(self, *, max_values: int=None):
+        if max_values is not None:
             self.max_values = max_values
-        return np.zeros[self.dimension, self.max_values]
+        return np.zeros([self.dimension, self.max_values])
         
         
     def Nnext(self, number, *, save_freq=1):
         '''
-        Computes next `number` pairs of position and velocity values and saves them. If `save_freq` is given it saves the save_freq'th next.
+        Computes next `number` pairs of position and velocity values and saves them. If `save_freq` is given it saves the save_freq'th pair each time.
         '''
         for i in range(number):
-            self.next(save_freq=save_freq)
+            self.next(save_freq=save_freq, index=i)
             
         
-    def next(self, *, save_freq=1):
+    def next(self, *, save_freq=1, index=1):
         '''
         Computes next pair of position and velocity values and saves it. If `save_freq` is given it saves the save_freq'th next.
         '''
@@ -61,23 +77,14 @@ class RungeKutta():
             
         for j in range(self.save_freq):
             self._next()
-        else:
-            self.save()
+        self.save(index)
     
-    
+
     def _next(self):
-        #! Comprobar que funcione
-        #k1 = np.array(self.dF(*(self.position), **self.dF_args))
-        #k2 = np.array(self.dF(*(self.position+0.5*k1*self.dt), **self.dF_args))
-        #k3 = np.array(self.dF(*(self.position+0.5*k2*self.dt), **self.dF_args))
-        #k4 = np.array(self.dF(*(self.position+k3*self.dt), **self.dF_args))
-        #self.velocity = 1/6*(k1+2*k2+2*k3+k4)
-        #self.position += self.velocity*self.dt
-        
-        k1 = self.dF(*(self.position), **self.dF_args)
-        k2 = self.dF(*(self.position+0.5*k1*self.dt), **self.dF_args)
-        k3 = self.dF(*(self.position+0.5*k2*self.dt), **self.dF_args)
-        k4 = self.dF(*(self.position+k3*self.dt), **self.dF_args)
+        k1 = np.array(self.dF(*(self.position), **self.dF_args))
+        k2 = np.array(self.dF(*(self.position+0.5*k1*self.dt), **self.dF_args))
+        k3 = np.array(self.dF(*(self.position+0.5*k2*self.dt), **self.dF_args))
+        k4 = np.array(self.dF(*(self.position+k3*self.dt), **self.dF_args))
         self.velocity = 1/6*(k1+2*k2+2*k3+k4)
         self.position += self.velocity*self.dt
     
@@ -87,10 +94,12 @@ class RungeKutta():
             self.positions[:, i] = self.position
             self.velocities[:, i] = self.velocity
         except IndexError:
-            np.concatenate((self.positions, self._create_values_array(), axis=1))
-            np.concatenate((self.velocities, self._create_values_array(), axis=1))
+            np.concatenate(self.positions, self._create_values_array(), axis=1)
+            np.concatenate(self.velocities, self._create_values_array(), axis=1)
             self.max_values += 2000
-            
+            self.save(i)
+        
+        
     def clear_values(self):
         self.positions[:,1:] = 0
         self.velocity[:,1:] = 0
