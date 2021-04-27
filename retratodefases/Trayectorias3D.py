@@ -31,13 +31,10 @@ class Trayectoria3D:
         self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
         self._dimension = 3
 
-        self.values = []
-        self.velocity = []
         self.initial_conditions = []
 
         try: 
             if kargs['numba']:
-                import numba as _numba
                 from numba import jit, vectorize
                 self.dF = jit(self.dF, nopython=True, cache=True, parallel=True)
                 if not dF_args:
@@ -46,10 +43,11 @@ class Trayectoria3D:
             pass
 
 
-        # Variables Runge-Kutta
+        # Variables Runge-Kutta generales
         self.runge_kutta_step = runge_kutta_step
         self.runge_kutta_freq = runge_kutta_freq
         self.n_points = n_points
+        self.trajectories = []
         
         # Variables no obligatorias
         self.Titulo = kargs['Titulo'] if kargs.get('Titulo') else 'Trayectoria'             # Titulo para el retrato de fases.
@@ -83,9 +81,9 @@ class Trayectoria3D:
 
         self.lines = kargs.get('lines')
 
-        self.termalization = kargs.get('termalization')
-        if not self.termalization:
-            self.termalization = 0
+        self.thermalization = kargs.get('thermalization')
+        if not self.thermalization:
+            self.thermalization = 0
         self.size = kargs.get('size')
         if not self.size:
             self.size = 0.5
@@ -98,79 +96,52 @@ class Trayectoria3D:
             self.sliders_fig, self.sliders_ax = plt.subplots() 
             self.sliders_ax.set_visible(False)
 
-
-    def rungekutta_time_independent(self, initial_values):
-        values = initial_values
-        if not isinstance(values, np.ndarray):
-            values = np.array(values)
-        while True:
-            k1 = np.array(self.dF(*(values), **self.dF_args))
-            k2 = np.array(self.dF(*(values+0.5*k1*self.runge_kutta_step), **self.dF_args))
-            k3 = np.array(self.dF(*(values+0.5*k2*self.runge_kutta_step), **self.dF_args))
-            k4 = np.array(self.dF(*(values+k3*self.runge_kutta_step), **self.dF_args))
-            diff = 1/6*self.runge_kutta_step*(k1+2*k2+2*k3+k4)
-            values += diff
-            yield values, diff
-
-
-    def compute_trayectory(self, initial_values):
-        values = np.zeros([3,self.n_points])
-        velocity = np.zeros([3,self.n_points])
-
-        try:
-            values[:,0] = np.array(initial_values)
-        except:
-            values[:,0] = np.array([random.random(), random.random(), random.random()])
-        
-        for i in range(1, self.n_points + self.termalization):
-            for j in range(self.runge_kutta_freq):
-                new_value = next(self.rungekutta_time_independent(values[:,0]))
-            if i>=self.termalization:
-                values[:,i-self.termalization], velocity[:,i-self.termalization] = new_value
-
-        return values, velocity
         
     def termaliza(self):
         self.posicion_inicial()
 
-    def posicion_inicial(self, *args, **kargs):
-        if len(args)>0:
-            args = np.array(tuple(map(float,args)))
-        else:
-            args = np.array([random.random(), random.random(), random.random()])
 
-        for vali_init in self.initial_conditions:
-            for a, b in zip(args, vali_init):
+    def posicion_inicial(self, *args, **kargs):
+        flag = False
+        for trajectory in self.trajectories:
+            for a, b in zip(args, trajectory.initial_values):
                 if a!=b:
-                    break
-        else:
-            self.initial_conditions.append(args) 
+                    flag = True
+        
+        if not flag and len(self.trajectories)>0:
+            return
+        
+        self.trajectories.append(
+            rungekutta.RungeKutta(
+                self, self.dF, self._dimension, self.n_points, 
+                dt=self.runge_kutta_step,
+                dF_args=self.dF_args, 
+                initial_values=args,
+                thermalization=self.thermalization
+                )
+            )
+ 
         
     def _calculate_values(self, *args, all_initial_conditions=False, **kargs):
-        if not args or all_initial_conditions:
-            self.values = []
-            self.velocity = []
-            if self.initial_conditions:
-                for initals in self.initial_conditions:
-                    values, velocity = self.compute_trayectory(initals)
-                    self.values.append(values)
-                    self.velocity.append(velocity)
-                return
-        values, velocity = self.compute_trayectory(args)
-        self.values.append(values)
-        self.velocity.append(velocity)
-        
+        for trajectory in self.trajectories:
+            trajectory.compute_all(save_freq=self.runge_kutta_freq)
 
 
     def plot(self, *args, **kargs):
         self._prepare_plot()
         self.dF_args.update({name: slider.value for name, slider in self.sliders.items() if slider.value!= None})
-
+        for trajectory in self.trajectories:
+            trajectory.dF_args = self.dF_args
+        
         self._calculate_values(all_initial_conditions=True)
 
         cmap = kargs.get('color')
 
-        for val, vel, val_init in zip(self.values, self.velocity, self.initial_conditions):
+        for trajectory in self.trajectories:
+            val = trajectory.positions
+            vel = trajectory.velocities
+            val_init = trajectory.initial_value
+            
             if self.lines:
                     self.ax['3d'].plot3D(*val[:,1:], label=f"({','.join(tuple(map(str, val_init)))})")
                     self.ax['X'].plot(val[1,1:], val[2,1:], label=f"({','.join(tuple(map(str, val_init)))})")
@@ -210,6 +181,7 @@ class Trayectoria3D:
         except:
             pass
 
+
     def _prepare_plot(self):
         self.ax['3d'].set_title(f'{self.Titulo}')
         if self.Rango is not None:
@@ -246,7 +218,6 @@ class Trayectoria3D:
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
     
     
-
     # Funciones para asegurarse que los parametros introducidos son válidos
     @property
     def dF(self):
@@ -264,6 +235,7 @@ class Trayectoria3D:
             if len(sig.parameters)<3 + len(self.dF_args):
                 raise exceptions.dFInvalid(sig, self.dF_args)
         self._dF = func
+
 
     @property
     def Rango(self):
