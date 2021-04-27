@@ -24,7 +24,7 @@ class Trayectoria2D(trj.trajectory):
 
         # Variables no obligatorias
         self.xlabel = kargs['xlabel'] if kargs.get('xlabel') else 'X'                       # Titulo en eje X
-        self.ylabel = kargs['ylabel'] if kargs.get('ylabel') else 'Y'                       # Titulo en eje Y                     # Titulo en eje Z
+        self.ylabel = kargs['ylabel'] if kargs.get('ylabel') else 'Y'                       # Titulo en eje Y
 
 
         # Variables para la representación
