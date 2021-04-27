@@ -9,7 +9,9 @@ def is_range(U):
 def construct_interval_1d(var):
     try:
         if is_number(var):
-            return sorted([-var, var])
+            if var !=0:
+                return sorted([-var, var])
+            raise Exception('0 No es un rango válido')
         if is_range(var):
              return var
     except Exception as e:
@@ -17,18 +19,31 @@ def construct_interval_1d(var):
 
 def construct_interval_2d(var, *, depht=0):
     try:
-        if is_number(var):
-            if depht == 0:
-                return [sorted([0, var])]*2
-            elif depht == 1:
-                return sorted([-var, var])
-        if is_range(var):
-            if depht == 0:
-                return [construct_interval_2d(i, depht=depht+1) for i in var]
-            if depht == 1:
-                return var
-    except Exception as e:
-        raise exceptions.RangoInvalid(f"{var} como rango 2d dio el error: "+str(e))
+        [a,b],[c,d] = var
+    except Exception:
+        try:
+            b,d = var
+            if is_range(b) or is_range(d):
+                [a,b],[c,d] = construct_interval_1d(b), construct_interval_1d(d)
+            else:
+                a = c = b
+                b = d
+        except Exception:
+            try:
+                a = var
+                if a !=0:
+                    b = d = a
+                    a = c = 0
+                else:
+                    raise Exception
+            except Exception as e:    
+                raise exceptions.RangoInvalid(f"{var} no es un rango 2d válido.")
+    a1 = [a,b]
+    a2 = [c,d]
+    a1.sort()
+    a2.sort()
+    return [a1, a2]
+
 
 def construct_interval_3d(var, *, depht=0):
     try:
