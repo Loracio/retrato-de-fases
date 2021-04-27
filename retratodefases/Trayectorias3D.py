@@ -7,13 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
 
-from . import sliders
-from . import rungekutta
-from .exceptions import *
-from .utils import utils
+from .trajectories import trajectory as trj
+ 
 
-
-class Trayectoria3D:
+class Trayectoria3D(trj.trajectory):
     """
     Computa una trayectoria en un sistema 3D.
     """
@@ -24,33 +21,9 @@ class Trayectoria3D:
         También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
         Se le debe pasar obligatoriamente una función que contenga la expresión de las derivadas de los parámetros.
         """
+        super().__init__(dF, 3, RangoRepresentacion=RangoRepresentacion, dF_args=dF_args, n_points=n_points, runge_kutta_step=runge_kutta_step, runge_kutta_freq=runge_kutta_freq, **kargs)
 
-        # Variables obligatorias
-        self.dF_args = dF_args                           # Argumentos extras que haya que proporcionar a la función dF
-        self.dF = dF                                     # Derivadas de las variables respecto al tiempo
-        self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
-        self._dimension = 3
-
-        self.initial_conditions = []
-
-        try: 
-            if kargs['numba']:
-                from numba import jit, vectorize
-                self.dF = jit(self.dF, nopython=True, cache=True, parallel=True)
-                if not dF_args:
-                    exceptions.dFArgsRequired()
-        except KeyError:
-            pass
-
-
-        # Variables Runge-Kutta generales
-        self.runge_kutta_step = runge_kutta_step
-        self.runge_kutta_freq = runge_kutta_freq
-        self.n_points = n_points
-        self.trajectories = []
-        
         # Variables no obligatorias
-        self.Titulo = kargs['Titulo'] if kargs.get('Titulo') else 'Trayectoria'             # Titulo para el retrato de fases.
         self.xlabel = kargs['xlabel'] if kargs.get('xlabel') else 'X'                       # Titulo en eje X
         self.ylabel = kargs['ylabel'] if kargs.get('ylabel') else 'Y'                       # Titulo en eje Y
         self.zlabel = kargs['zlabel'] if kargs.get('zlabel') else 'Z'                       # Titulo en eje Z
@@ -75,111 +48,27 @@ class Trayectoria3D:
             'Z': axZ,
             '3d': ax3d
         }
-        
-        self.sliders = {}
-        self.sliders_fig = False
-
-        self.lines = kargs.get('lines')
-
-        self.thermalization = kargs.get('thermalization')
-        if not self.thermalization:
-            self.thermalization = 0
-        self.size = kargs.get('size')
-        if not self.size:
-            self.size = 0.5
-        self.color = kargs.get('color')
-        self._mark_start_point = kargs.get('mark_start_point')
 
 
-    def _create_sliders_plot(self):
-        if not isinstance(self.sliders_fig, plt.Figure):
-            self.sliders_fig, self.sliders_ax = plt.subplots() 
-            self.sliders_ax.set_visible(False)
-
-        
-    def termaliza(self):
-        self.posicion_inicial()
+    def _plot_lines(self, val, val_init):
+        self.ax['3d'].plot3D(*val[:,1:], label=f"({','.join(tuple(map(str, val_init)))})")
+        self.ax['X'].plot(val[1,1:], val[2,1:], label=f"({','.join(tuple(map(str, val_init)))})")
+        self.ax['Y'].plot(val[0,1:], val[2,1:], label=f"({','.join(tuple(map(str, val_init)))})")
+        self.ax['Z'].plot(val[0,1:], val[1,1:], label=f"({','.join(tuple(map(str, val_init)))})")
 
 
-    def posicion_inicial(self, *args, **kargs):
-        flag = False
-        for trajectory in self.trajectories:
-            for a, b in zip(args, trajectory.initial_values):
-                if a!=b:
-                    flag = True
-        
-        if not flag and len(self.trajectories)>0:
-            return
-        
-        self.trajectories.append(
-            rungekutta.RungeKutta(
-                self, self.dF, self._dimension, self.n_points, 
-                dt=self.runge_kutta_step,
-                dF_args=self.dF_args, 
-                initial_values=args,
-                thermalization=self.thermalization
-                )
-            )
- 
-        
-    def _calculate_values(self, *args, all_initial_conditions=False, **kargs):
-        for trajectory in self.trajectories:
-            trajectory.compute_all(save_freq=self.runge_kutta_freq)
+    def _scatter_start_point(self, val_init):
+        self.ax['3d'].scatter3D(*val_init, s=self.size+1, c=[0])
+        self.ax['X'].scatter(val_init[1], val_init[2], s=self.size+1, c=[0])
+        self.ax['Y'].scatter(val_init[0], val_init[2], s=self.size+1, c=[0])
+        self.ax['Z'].scatter(val_init[0], val_init[1], s=self.size+1, c=[0])
 
 
-    def plot(self, *args, **kargs):
-        self._prepare_plot()
-        self.dF_args.update({name: slider.value for name, slider in self.sliders.items() if slider.value!= None})
-        for trajectory in self.trajectories:
-            trajectory.dF_args = self.dF_args
-        
-        self._calculate_values(all_initial_conditions=True)
-
-        cmap = kargs.get('color')
-
-        for trajectory in self.trajectories:
-            val = trajectory.positions
-            vel = trajectory.velocities
-            val_init = trajectory.initial_value
-            
-            if self.lines:
-                    self.ax['3d'].plot3D(*val[:,1:], label=f"({','.join(tuple(map(str, val_init)))})")
-                    self.ax['X'].plot(val[1,1:], val[2,1:], label=f"({','.join(tuple(map(str, val_init)))})")
-                    self.ax['Y'].plot(val[0,1:], val[2,1:], label=f"({','.join(tuple(map(str, val_init)))})")
-                    self.ax['Z'].plot(val[0,1:], val[1,1:], label=f"({','.join(tuple(map(str, val_init)))})")
-            else:
-                def norma(v):
-                    suma = 0
-                    for i in range(3):
-                        suma += np.nan_to_num(v[i]**2)
-                    return np.sqrt(suma)
-                if self.color == 't':
-                    color = np.linspace(0,1, vel.shape[1])
-                else:
-                    cmap = self.color
-                    color = norma(vel[:])
-                    color /= color.max()
-
-                self.ax['3d'].scatter3D(*val, s=self.size, c=color, cmap=cmap)
-                self.ax['X'].scatter(val[1,:], val[2,:], s=self.size, c=color, cmap=cmap)
-                self.ax['Y'].scatter(val[0,:], val[2,:], s=self.size, c=color, cmap=cmap)
-                self.ax['Z'].scatter(val[0,:], val[1,:], s=self.size, c=color, cmap=cmap)
-
-            if self._mark_start_point:
-                for point in self.initial_conditions:
-                    self.ax['3d'].scatter3D(*point, s=self.size+1, c=[0])
-                    self.ax['X'].scatter(point[1], point[2], s=self.size+1, c=[0])
-                    self.ax['Y'].scatter(point[0], point[2], s=self.size+1, c=[0])
-                    self.ax['Z'].scatter(point[0], point[1], s=self.size+1, c=[0])
-
-        for fig in self.fig.values():
-            if self.lines:
-                fig.legend()
-            fig.canvas.draw_idle()
-        try:
-            self.sliders_fig.canvas.draw_idle()
-        except:
-            pass
+    def _scatter_trajectory(self, val, color, cmap):
+        self.ax['3d'].scatter3D(*val, s=self.size, c=color, cmap=cmap)
+        self.ax['X'].scatter(val[1,:], val[2,:], s=self.size, c=color, cmap=cmap)
+        self.ax['Y'].scatter(val[0,:], val[2,:], s=self.size, c=color, cmap=cmap)
+        self.ax['Z'].scatter(val[0,:], val[1,:], s=self.size, c=color, cmap=cmap)
 
 
     def _prepare_plot(self):
@@ -206,69 +95,3 @@ class Trayectoria3D:
             self.ax[coord].set_xlabel(f'{x_label}')
             self.ax[coord].set_ylabel(f'{y_label}')
             self.ax[coord].grid()
-
-
-    def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
-        """
-        Añade un slider sobre un plot ya existente.
-        """
-        self._create_sliders_plot()
-        self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
-
-        self.sliders[param_name].slider.on_changed(self.sliders[param_name])
-    
-    
-    # Funciones para asegurarse que los parametros introducidos son válidos
-    @property
-    def dF(self):
-        return self._dF
-
-    @dF.setter
-    def dF(self, func):
-        if not callable(func):
-            raise exceptions.dFNotCallable(func)
-        try:
-            sig = signature(func)
-        except ValueError:
-            pass
-        else:
-            if len(sig.parameters)<3 + len(self.dF_args):
-                raise exceptions.dFInvalid(sig, self.dF_args)
-        self._dF = func
-
-
-    @property
-    def Rango(self):
-        return self._Rango
-
-    @Rango.setter
-    def Rango(self, value):
-        if value == None:
-            self._Rango = None
-            return
-        self._Rango = np.array(utils.construct_interval(value, dim=3))
-
-
-    @property
-    def L(self):
-        return self._L
-
-    @L.setter
-    def L(self, value):
-        self._L=value
-        if utils.is_number(value):
-            self._L = [value for _ in range(self._dimension)]
-        while len(self._L)<self._dimension:
-            self._L.append(10)
-
-
-    @property
-    def dF_args(self):
-        return self._dF_args
-
-    @dF_args.setter
-    def dF_args(self, value):
-        if value:
-            if not isinstance(value, dict):
-                raise exceptions.dF_argsInvalid(value)
-        self._dF_args = value

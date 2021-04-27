@@ -1,7 +1,7 @@
 from inspect import signature
 
 from .exceptions import *
-from . import sliders
+from .sliders import sliders
 from .utils import utils
 
 import matplotlib

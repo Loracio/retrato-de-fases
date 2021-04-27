@@ -5,6 +5,23 @@ import numpy as np
 
 if True:
     """
+    Ejemplo 0 Círculo: una trayectoria en 2 dimensiones
+    """
+
+    def Circulo(x,y,*, w=1, z=1):
+        return w*y, -z*x
+
+    circle = Trayectoria2D(Circulo, n_points=1300, size=2, mark_start_position=True, Titulo='Just a circle')
+    # Pasamos condiciones iniciales a las trayectorias:
+    circle.posicion_inicial(1,1)
+    circle.posicion_inicial(2,2)
+    circle.add_slider('w', valinterval=[-1,5])
+    circle.add_slider('z', valinterval=[-1,5])
+    circle.plot()
+    plt.show()
+
+if True:
+    """
     Ejemplo 1 Lorentz: dos trayectorias separadas ligeramente
     """
 

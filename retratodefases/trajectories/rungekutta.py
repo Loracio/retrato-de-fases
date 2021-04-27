@@ -1,11 +1,11 @@
 import numpy as np
 
-from .exceptions import *
-from .utils import utils
+from ..exceptions import *
+from ..utils import utils
 from random import random
 
 class RungeKutta():
-    def __init__(self, portrait, dF, dimension, max_values, *, dt=0.1, dF_args=None, initial_values: list=None, thermalization=0):
+    def __init__(self, portrait, dF, dimension, max_values, *, dt=0.1, dF_args=None, initial_values=None, thermalization=0):
         self.portrait = portrait
         self.dF = dF
         self.dimension = dimension
@@ -14,10 +14,12 @@ class RungeKutta():
         self.thermalization=thermalization
         
         self.dF_args = dF_args
-        self.initial_value = np.array(tuple(map(float,initial_values)))
-        if not self.initial_value:
+        
+        if initial_values is None or len(initial_values)<self.dimension:
             aux = [random() for i in range(dimension)]
             self.initial_value = np.array(aux)
+        else:
+            self.initial_value = np.array(tuple(map(float,initial_values)))
         
         self.position = self.initial_value.copy()
         self.positions = self._create_values_array()
