@@ -7,7 +7,7 @@ import matplotlib
 
 class Map1D:
     _name_ = 'Map1D'
-    def __init__(self, dF, x_range, y_range, n_points, *, dF_args, Titulo='Mapa 1D', xlabel=r'$X_{n}$', ylabel=r'$X_{n+1}$', **kargs):
+    def __init__(self, dF, x_range, y_range, n_points, *, dF_args, Titulo='Mapa 1D', xlabel=r'control parameter', ylabel=r'$X_{n+1}$', **kargs):
         # Variables obligatorias
         # Argumentos extras que haya que proporcionar a la función dF
         self.dF_args = dF_args
@@ -52,7 +52,7 @@ class Map1D:
         self.thermalization = kargs.get('thermalization')
 
 
-    def _compute_data(self, initial_value, param_name, param_interval, param_delta, limit_cicle_check=50):
+    def _compute_data(self, initial_value, param_name, param_interval, param_delta, *, limit_cicle_check=50, delta=0.0001):
 
         self._range = np.arange(param_interval[0], param_interval[1]+ param_delta, param_delta)
 
@@ -61,7 +61,7 @@ class Map1D:
 
             self.maps.update({param: Map.instance_and_compute_all(self, self.dF, self.dimension,
                              self.n_points, self.dF_args, initial_value, thermalization=self.thermalization,
-                             limit_cicle_check=50)})
+                             limit_cicle_check=50, delta=delta)})
             
        #self._range = np.arange(param_interval[0], param_interval[1]+ param_delta, param_delta)
 
@@ -69,7 +69,7 @@ class Map1D:
        #iterable= []
        #dF_args = self.dF_args.copy()
        
-       self.maps = [Map(self, self.dF, self.dimension, self.n_points, self.dF_args, initial_value, thermalization=self.thermalization, limit_cicle_check=50)]
+       #self.maps = [Map(self, self.dF, self.dimension, self.n_points, self.dF_args, initial_value, thermalization=self.thermalization, limit_cicle_check=50)]
        
        #for i, param in enumerate(self._range):
        #    dF_args.update({param_name: param})
@@ -98,18 +98,20 @@ class Map1D:
 
     def plot(self, *, color=None):
         self._prepare_plot()
+        
+        if color is not None:
+            self.color = color
+            
         cmap = self.color
         colores_norm = plt.Normalize(vmin=self.Rango[1][0], vmax=self.Rango[1][1])
         for i in self._range:
             values = self.maps[i].positions
-            color = values[0,0:-2]
-            a = values[0,0:-2]
-            b = values[0,1:-1]
+            color=values[0,0:-2]
             range_x = np.zeros(len(color)) + i
-            
             self.ax.scatter(
-                range_x, b,
+                range_x, values[0,1:-1],
                 s=self.size, c=color, cmap=cmap, norm=colores_norm
             )
             
         self.fig.colorbar(matplotlib.cm.ScalarMappable(norm=colores_norm, cmap=cmap))
+        self.fig.colorbar.ax.set_ylabel(r'$X_{n}$', rotate=270)

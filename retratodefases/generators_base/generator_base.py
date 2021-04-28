@@ -41,13 +41,13 @@ class _Generator_():
         '''Borra las listas que guardan la información guardada por `self.save`'''
         ...
         
-    def _check_limit_cicle(self):
+    def _check_limit_cicle(self, _delta):
         '''(Opcional) Comprueba que se esté en un ciclo límite'''
         return False
      
 
     # Métodos generales
-    def compute_all(self, *, save_freq=1, limit_cicle_check=False):
+    def compute_all(self, *, save_freq=1, limit_cicle_check=False, delta=0.01):
         '''
         Computes `RungeKutta.max_values` and saves them. If `save_freq` is given it saves them every that amount.
         Returns the number of points calculated
@@ -56,14 +56,14 @@ class _Generator_():
         for i in range(self.thermalization):
             self._next()
 
-        return self.Nnext(self.max_values, save_freq=save_freq, limit_cicle_check=limit_cicle_check)
+        return self.Nnext(self.max_values, save_freq=save_freq, limit_cicle_check=limit_cicle_check, delta=delta)
 
     def _create_values_array(self, *, max_values: int = None):
         if max_values is not None:
             self.max_values = max_values
         return np.zeros([self.dimension, self.max_values])
 
-    def Nnext(self, number, *, save_freq=1, limit_cicle_check=False):
+    def Nnext(self, number, *, save_freq=1, limit_cicle_check=False, delta):
         '''
         Computes next `number` pairs of position and velocity values and saves them. Returns the number of points calculated.
         If `save_freq` is given it saves the save_freq'th pair each time.
@@ -79,7 +79,7 @@ class _Generator_():
         for i in range(number//limit_cicle_check):
             for j in range(limit_cicle_check):
                 self.next(index=i*limit_cicle_check + j)
-            if self._check_limit_cicle():
+            if self._check_limit_cicle(delta):
                 return i*limit_cicle_check + j
 
     def next(self, *, index=1):

@@ -26,7 +26,7 @@ class Map(_Generator_):
 
         max_index = instance.compute_all(**kargs)
         if max_index is not None:
-            instance.positions = instance.positions[0:max_index-1]
+            instance.positions = instance.positions[:,0:max_index-1]
         return instance
 
     def _next(self): 
@@ -43,8 +43,8 @@ class Map(_Generator_):
     def clear_values(self):
         self.positions[:, 1:] = 0
         
-    def _check_limit_cicle(self):
-        #for i in self.positions[0,0:-2]:
-        #    if np.equal(i, *(self.position)):
-        #        return True
+    def _check_limit_cicle(self, delta):
+        for i in self.positions[0,0:-2]:
+            if np.linalg.norm(i - self.position)<delta:
+                return True
         return False    
