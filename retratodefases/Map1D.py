@@ -39,7 +39,7 @@ class Map1D:
         self.fig, self.ax = plt.subplots()
         self.color = kargs.get('color')
         if not self.color:
-            self.color = 'rainbow'
+            self.color = 'inferno'
 
         self.maps = {}
         #! No se si podríamos implementar sliders aquí, no creo que sea útil
@@ -112,6 +112,5 @@ class Map1D:
                 range_x, values[0,1:-1],
                 s=self.size, c=color, cmap=cmap, norm=colores_norm
             )
-            
-        self.fig.colorbar(matplotlib.cm.ScalarMappable(norm=colores_norm, cmap=cmap))
-        self.fig.colorbar.ax.set_ylabel(r'$X_{n}$', rotate=270)
+        
+        self.fig.colorbar(matplotlib.cm.ScalarMappable(norm=colores_norm, cmap=cmap), label=r'$X_{n}$')
