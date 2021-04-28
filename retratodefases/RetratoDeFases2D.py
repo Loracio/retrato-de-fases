@@ -48,7 +48,7 @@ class RetratoDeFases2D:
 
 
     def plot(self, *, color=None):
-        self._dibuja_streamplot(color=color if color else self.color)
+        self._dibuja_streamplot(color=color if color is not None else self.color)
 
         self.fig.canvas.draw_idle()
 
