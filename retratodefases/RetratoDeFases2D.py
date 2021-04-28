@@ -1,10 +1,10 @@
 from inspect import signature
 
-from .exceptions import *
+from .exceptions import exceptions
 from .sliders import sliders
 from .utils import utils
 
-import matplotlib
+#import matplotlib
 import matplotlib.pyplot as plt
 
 import numpy as np

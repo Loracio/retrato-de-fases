@@ -8,8 +8,8 @@ import numpy as np
 from matplotlib import cm
 
 from ..sliders import sliders
-from . import rungekutta
-from ..exceptions import *
+from . import RungeKutta
+from ..exceptions import exceptions
 from ..utils import utils
 
 
@@ -92,7 +92,7 @@ class trajectory:
             return
         
         self.trajectories.append(
-            rungekutta.RungeKutta(
+            RungeKutta(
                 self, self.dF, self._dimension, self.n_points, 
                 dt=self.runge_kutta_step,
                 dF_args=self.dF_args, 
