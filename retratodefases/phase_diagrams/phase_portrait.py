@@ -16,19 +16,20 @@ class PhasePortrait:
     """
     _name_ = ''
     def __init__(self, dF, Range, dimension, *, MeshDim=20, dF_args={}, Density = 1, Polar = False, Title = 'Phase Portrait', color='rainbow'):
-            self.dF_args = dF_args                           # dF function's args
-            self.dF = dF                                     # Function containing system's equations
-            self.Range = Range                               # Range of graphical representation
-            self.dimension = dimension                       # Dimension of the phase space
-            
-            self.L = int(MeshDim)                                            # Number of points in the meshgrid
-            self.Density = Density                                           # Controls concentration of nearby trajectories
-            self.Polar = Polar                                               # If dF expression given in polar coord. mark as True
-            self.Title = Title                                               # Title of the plot
+        self.dimension = dimension                       # Dimension of the phase space
+        self.dF_args = dF_args                           # dF function's args
+        self.dF = dF                                     # Function containing system's equations
+        self.Range = Range                               # Range of graphical representation
+        
+        
+        self.L = int(MeshDim)                                            # Number of points in the meshgrid
+        self.Density = Density                                           # Controls concentration of nearby trajectories
+        self.Polar = Polar                                               # If dF expression given in polar coord. mark as True
+        self.Title = Title                                               # Title of the plot
 
-            # Variables for plotting
-            self.color = color
-            self.sliders = {}
+        # Variables for plotting
+        self.color = color
+        self.sliders = {}
           
             
     
