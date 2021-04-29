@@ -4,12 +4,13 @@ from .exceptions import exceptions
 from .sliders import sliders
 from .utils import utils
 
+from .phase_diagrams import PhasePortrait
 #import matplotlib
 import matplotlib.pyplot as plt
 
 import numpy as np
 
-class RetratoDeFases2D:
+class RetratoDeFases2D(PhasePortrait):
     """
     Hace un retrato de fases de un sistema 2D.
     """
@@ -20,25 +21,14 @@ class RetratoDeFases2D:
         También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
         Se le debe pasar obligatoriamente una función que contenga la expresión de las derivadas de los parámetros.
         """
-
-        # Variables obligatorias
-        self.dF_args = dF_args                           # Argumentos extras que haya que proporcionar a la función dF
-        self.dF = dF                                     # Derivadas de las variables respecto al tiempo
-        self.Rango = RangoRepresentacion                 # Rango de representación del diagrama
+        super().__init__(dF, RangoRepresentacion, 2, MeshDim=LongitudMalla, dF_args=dF_args, Polar=Polar, Title=Titulo, color=color)
         
-        # Variables no obligatorias
-        self.L = int (LongitudMalla*abs(self.Rango[0,0]-self.Rango[0,1]))                     # Número de puntos por eje para representar el diagrama (habrá L² puntos)
-        self.Densidad = Densidad                                                              # Controla la cercanía de las líneas de flujo
-        self.Polar = Polar                                                                    # Si se pasan las coordenadas en polares, marcar como True.
-        self.Titulo = Titulo                                                                  # Titulo para el retrato de fases.
+        # Variables no obligatorias                                                           # Titulo para el retrato de fases.
         self.xlabel = xlabel                                                                  # Titulo en eje X
         self.ylabel = ylabel                                                                  # Titulo en eje Y
 
-
         # Variables para la representación
         self.fig, self.ax = plt.subplots()
-        self.color = color
-        self.sliders = {}
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
         self._X, self._Y = np.meshgrid(np.linspace(*self.Rango[0,:], self.L), np.linspace(*self.Rango[1,:], self.L))   #Crea una malla de tamaño L²
@@ -48,15 +38,11 @@ class RetratoDeFases2D:
 
 
     def plot(self, *, color=None):
-        self._dibuja_streamplot(color=color if color is not None else self.color)
-
+        super().draw_plot(color=color)
         self.fig.canvas.draw_idle()
 
 
-    def _dibuja_streamplot(self, *, color=None):
-
-        self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}
-
+    def draw_plot(self, *, color=None):
         if self.Polar:
             self._transformacionPolares()
         else:
@@ -76,17 +62,6 @@ class RetratoDeFases2D:
         
         return stream
 
-
-    def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
-        """
-        Añade un slider sobre un plot ya existente.
-        """
-        self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
-
-        self.fig.subplots_adjust(bottom=0.25)
-
-        self.sliders[param_name].slider.on_changed(self.sliders[param_name])
-    
     
     def _transformacionPolares(self):
         """
@@ -94,39 +69,3 @@ class RetratoDeFases2D:
         """
         self._dR, self._dTheta = self.dF(self._R, self._Theta, **self.dF_args)
         self._dX, self._dY = self._dR*np.cos(self._Theta) - self._R*np.sin(self._Theta)*self._dTheta, self._dR*np.sin(self._Theta)+self._R*np.cos(self._Theta)*self._dTheta
-
-
-
-    # Funciones para asegurarse que los parametros introducidos son válidos
-    @property
-    def dF(self):
-        return self._dF
-
-    @dF.setter
-    def dF(self, func):
-        if not callable(func):
-            raise exceptions.dFNotCallable(func)
-        sig = signature(func)
-        if len(sig.parameters)<2 + len(self.dF_args):
-            raise exceptions.dFInvalid(sig, self.dF_args)
-        self._dF = func
-
-    @property
-    def Rango(self):
-        return self._Rango
-
-
-    @Rango.setter
-    def Rango(self, value):
-        self._Rango = np.array(utils.construct_interval(value, dim=2))
-
-    @property
-    def dF_args(self):
-        return self._dF_args
-
-    @dF_args.setter
-    def dF_args(self, value):
-        if value:
-            if not isinstance(value, dict):
-                raise exceptions.dF_argsInvalid(value)
-        self._dF_args = value
