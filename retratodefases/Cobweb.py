@@ -1,17 +1,17 @@
-from random import random
+from inspect import signature
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..sliders import sliders
-from ..exceptions import exceptions
-from ..utils import utils
+from .sliders import sliders
+from .exceptions import exceptions
+from .utils import utils
 
 
 class Cobweb:
 
     _name_ = 'Cobweb'
-    def __init__(dF, initial_position, xrange, *, dF_args=None, yrange=None, max_steps=100, n_points=10000):
+    def __init__(self, dF, initial_position, xrange, *, dF_args=None, yrange=[], max_steps=100, n_points=10000, **kargs):
         
         self.dF = dF
         self.dF_args = dF_args
@@ -34,11 +34,11 @@ class Cobweb:
 
     def _prepare_plot(self, max_value):
 
-        self.ax.title(self.Title)
-        self.ax.xlabel(self.xlabel)
-        self.ax.ylabel(self.ylabel)
+        self.ax.set_title(self.Title)
+        self.ax.set_xlabel(self.xlabel)
+        self.ax.set_ylabel(self.ylabel)
 
-        if self.yrange==None:
+        if self.yrange==[]:
             self.ax.set_ylim(top=1.10*max_value)
         else:
             self.ax.set_ylim(self.yrange)
@@ -49,28 +49,27 @@ class Cobweb:
 
     def plot(self, *args, **kargs):
 
-        self.dF_args.update({name: slider.value for name, slider in self.sliders.items() if slider.value!= None})
-
         bisector = np.linspace(self.xrange[0], self.xrange[1], self.n_points)
-        func_result = self.dF(bisector)
+        func_result = self.dF(bisector, **self.dF_args)
 
         self._prepare_plot(np.max(func_result))
 
         self.ax.plot(bisector, func_result, 'b')
         self.ax.plot(bisector, bisector, "k:")
 
-        x, y = self.initial_position, self.dF(initial_position)
+        x, y = self.initial_position, self.dF(self.initial_position, **self.dF_args)
         self.ax.plot([x, x], [0, y], 'black')
 
         for _ in range(self.max_steps):
 
             self.ax.plot([x, y], [y, y], 'black')
-            self.ax.plot([y, y], [y, self.dF(y)], 'black')
-            x, y = y, self.dF(y)
+            self.ax.plot([y, y], [y, self.dF(y, **self.dF_args)], 'black')
+            x, y = y, self.dF(y, **self.dF_args)
 
             if y>self.xrange[1] or y<self.xrange[0]:
                 print(f'Warning: cobweb plot got out of range and could not compute {self.max_steps} steps.')
                 break
+
 
         self.fig.canvas.draw_idle()
 
@@ -87,6 +86,8 @@ class Cobweb:
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
 
 
+    def update_dF_args(self):
+        self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}  
 
 
     # Funciones para asegurarse que los parametros introducidos son válidos
@@ -102,9 +103,6 @@ class Cobweb:
             sig = signature(func)
         except ValueError:
             pass
-        else:
-            if len(sig.parameters)<self._dimension + len(self.dF_args):
-                raise exceptions.dFInvalid(sig, self.dF_args)
         self._dF = func
 
     @property
