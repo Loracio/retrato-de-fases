@@ -16,7 +16,7 @@ class Slider():
         if 'Trayectoria' in self.retrato._name_: 
             self.ax = self.retrato.sliders_fig.add_axes([0.25, 0.88 - 0.05*len(self.retrato.sliders), 0.4, 0.05])
 
-        if 'RetratoDeFases' in self.retrato._name_:
+        if 'RetratoDeFases' or 'Cobweb' in self.retrato._name_:
             self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.4, 0.03])
 
         
