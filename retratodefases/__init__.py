@@ -9,4 +9,5 @@ if not __PHASEPORTRAIT_MODULE_IMPORTED__:
     from .Trayectorias3D import Trayectoria3D
     from .Trayectorias2D import Trayectoria2D
     from .Map1D import Map1D
+    from .Cobweb import Cobweb
 __PHASEPORTRAIT_MODULE_IMPORTED__ = True
