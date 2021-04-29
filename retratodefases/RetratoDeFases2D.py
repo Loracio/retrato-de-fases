@@ -5,7 +5,7 @@ from .sliders import sliders
 from .utils import utils
 
 from .phase_diagrams import PhasePortrait, Funcion1D
-#import matplotlib
+import matplotlib
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -42,7 +42,7 @@ class RetratoDeFases2D(PhasePortrait):
         
 
     def plot(self, *, color=None):
-        super().draw_plot(color=color)
+        self.draw_plot(color=color)
         self.fig.canvas.draw_idle()
 
 
@@ -57,21 +57,19 @@ class RetratoDeFases2D(PhasePortrait):
             
         colores = (self._dX**2+self._dY**2)**(0.5)
         colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())
-        stream = self.ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Densidad)
+        stream = self.ax.streamplot(self._X, self._Y, self._dX, self._dY, color=colores, cmap=color, norm=colores_norm, linewidth=1, density= self.Density)
         self.ax.set_xlim(self.Range[0,:])
         self.ax.set_ylim(self.Range[1,:])
         x0,x1 = self.ax.get_xlim()
         y0,y1 = self.ax.get_ylim()
         self.ax.set_aspect(abs(x1-x0)/abs(y1-y0))
-        self.ax.set_title(f'{self.Titulo}')
+        self.ax.set_title(f'{self.Title}')
         self.ax.set_xlabel(f'{self.xlabel}')
         self.ax.set_ylabel(f'{self.ylabel}')
         self.ax.grid()
         
         return stream
-
-
-
+    
     
     def _transformacionPolares(self):
         """

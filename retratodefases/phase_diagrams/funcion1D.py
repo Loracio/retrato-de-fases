@@ -26,5 +26,5 @@ class Funcion1D():
         
     def plot(self):
         self._compute_values()
-        self.portrait.ax.plot(self._x_values, self._y_values, '-', color=color)
+        self.portrait.ax.plot(self._x_values, self._y_values, '-', color=self.color)
         
