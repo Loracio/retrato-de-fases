@@ -4,6 +4,6 @@ except NameError:
     __PHASE_UTILS_IMPORTED__= False
 
 if not __PHASE_UTILS_IMPORTED__:
-    import utils
+    from . import utils
 
 __PHASE_UTILS_IMPORTED__ = True
