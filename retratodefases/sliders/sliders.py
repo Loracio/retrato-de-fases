@@ -20,7 +20,7 @@ class Slider():
             self.ax = self.retrato.fig.add_axes([0.25, 0.015 + 0.05*len(self.retrato.sliders), 0.4, 0.03])
 
         
-        aux = {'valinit':valinit} if self.value else {}
+        aux = {'valinit':valinit} if isinstance(self.value, (int, float)) else {}
         self.slider = matplot_slider(self.ax, self.param_name, *valinterval, valstep=valstep, **aux)
 
     def __call__(self, value):

@@ -11,7 +11,7 @@ from .utils import utils
 class Cobweb:
 
     _name_ = 'Cobweb'
-    def __init__(self, dF, initial_position, xrange, *, dF_args=None, yrange=[], max_steps=100, n_points=10000, **kargs):
+    def __init__(self, dF, initial_position, xrange, *, dF_args={None}, yrange=[], max_steps=100, n_points=10000, **kargs):
         
         self.dF = dF
         self.dF_args = dF_args
@@ -87,7 +87,22 @@ class Cobweb:
 
 
     def update_dF_args(self):
-        self.dF_args = {name: slider.value for name, slider in self.sliders.items() if slider.value!= None}  
+        for name, slider in self.sliders.items():
+            if slider.value!= None and name!=r'$x_0$':
+                self.dF_args[name] = slider.value 
+
+        if self.sliders.get(r'$x_0$'):
+            self.initial_position = self.sliders[r'$x_0$'].value
+
+    def initial_position_slider(self, *, valstep=0.05, valinterval=[0,1]):
+        """
+        Adds a slider for changing initial value on a cobweb plot
+        """
+        self.sliders.update({r'$x_0$': sliders.Slider(self, r'$x_0$', valinit=self.initial_position, valstep=valstep, valinterval=valinterval)})
+
+        self.fig.subplots_adjust(bottom=0.25)
+
+        self.sliders[r'$x_0$'].slider.on_changed(self.sliders[r'$x_0$'])
 
 
     # Funciones para asegurarse que los parametros introducidos son válidos
