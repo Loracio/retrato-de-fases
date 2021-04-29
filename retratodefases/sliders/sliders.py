@@ -33,4 +33,5 @@ class Slider():
             for ax in self.retrato.ax.values():
                 ax.cla()
         self.value = value
+        self.retrato.update_dF_args()
         self.retrato.plot()
