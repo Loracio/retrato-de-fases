@@ -14,7 +14,7 @@ class _Generator_():
         self.max_values = max_values
         self.thermalization = thermalization if thermalization is not None else 0
 
-        self.dF_args = dF_args
+        self.dF_args = dF_args.copy()
         if utils.is_number(initial_values):
             initial_values = [initial_values]
 
@@ -68,7 +68,7 @@ class _Generator_():
         Computes next `number` pairs of position and velocity values and saves them. Returns the number of points calculated.
         If `save_freq` is given it saves the save_freq'th pair each time.
         '''
-        if save_freq:
+        if save_freq is not None:
             self.save_freq = save_freq
         
         if limit_cicle_check is False:
@@ -76,11 +76,13 @@ class _Generator_():
                 self.next(index=i)
             return
         
-        for i in range(number//limit_cicle_check):
-            for j in range(limit_cicle_check):
-                self.next(index=i*limit_cicle_check + j)
-            if self._check_limit_cicle(delta):
-                return i*limit_cicle_check + j
+        for i in range(limit_cicle_check):
+            self.next(index=i)
+        if self._check_limit_cicle(delta):
+            return i
+        for j in range(number-limit_cicle_check):
+            self.next(index=i + j)
+            
 
     def next(self, *, index=1):
         '''

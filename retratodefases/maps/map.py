@@ -15,7 +15,15 @@ class Map(_Generator_):
         self.positions = self._create_values_array()
 
     @classmethod
-    def instance_and_compute_all(cls, portrait, dF, dimension, max_values, dF_args, initial_values, save_freq=1, thermalization=0, **kargs):
+    def _instance_and_compute_all(cls, tup):
+        instance = cls(tup[0], tup[1], tup[2], tup[3], dF_args=tup[4], initial_values=tup[5], thermalization=tup[6])
+ 
+        max_index = instance.compute_all(limit_cicle_check=tup[7], delta=tup[8])
+        if max_index is not None:
+            instance.positions = instance.positions[:,0:max_index-1]
+        return instance
+    @classmethod
+    def instance_and_compute_all(cls, portrait, dF, dimension, max_values, dF_args, initial_values, save_freq, thermalization, **kargs):
         '''
         Creates a RungeKutta instance and computes `max_values` pairs of position and velocity every `save_freq`.
         If `thermalization` is given it saves the pairs from that point forward.
