@@ -37,8 +37,11 @@ class PhasePortrait:
         """
         Must plots the values. Must treat `PhasePortrait.Polar=True`
         """
-        ...
-        
+        try:
+            for func in self.funcions:
+                func.plot()
+        except AttributeError:
+            pass
             
             
     def plot(self, *, color=None):

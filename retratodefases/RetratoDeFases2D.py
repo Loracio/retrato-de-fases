@@ -47,13 +47,12 @@ class RetratoDeFases2D(PhasePortrait):
 
 
     def draw_plot(self, *, color=None):
+        super().draw_plot()
+        
         if self.Polar:
             self._transformacionPolares()
         else:
             self._dX, self._dY = self.dF(self._X, self._Y, **self.dF_args)
-            
-        for func in self.funcions:
-            func.plot()
             
         colores = (self._dX**2+self._dY**2)**(0.5)
         colores_norm = matplotlib.colors.Normalize(vmin=colores.min(), vmax=colores.max())

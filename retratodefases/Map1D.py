@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 from .maps import Map
 from .sliders import Slider
-
+from .phase_diagrams import Funcion1D
 
 class Map1D():
     _name_ = 'Map1D'
@@ -29,8 +29,10 @@ class Map1D():
             self.color = 'inferno'
 
         self.maps = {}
-        #! No se si podríamos implementar sliders aquí, no creo que sea útil, lo dejo por si acaso
+
         self.sliders = {}
+        
+        self.funcions = []
         
         self._trajectory = None
 
@@ -80,6 +82,9 @@ class Map1D():
         
 
     def plot(self, *, color=None):
+        for func in self.funcions:
+            func.plot()
+        
         self._compute_data()
 
         if color is not None:
@@ -105,6 +110,9 @@ class Map1D():
 
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
 
+    def add_funcion(self, funcion1d, *, n_points=500, xRange=None, dF_args=None, color='g'):
+        self.funcions.append(Funcion1D(self, funcion1d, n_points=n_points, xRange=xRange, dF_args=None, color=color))
+        
 
     def _prepare_plot_trajectory(self):
         if self._trajectory is None:

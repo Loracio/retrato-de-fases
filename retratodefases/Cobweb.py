@@ -28,6 +28,7 @@ class Cobweb:
 
         self.fig, self.ax = plt.subplots()
         self.sliders = {}
+        self.funcions = []
         self.sliders_fig = False
 
 
@@ -48,6 +49,8 @@ class Cobweb:
 
 
     def plot(self, *args, **kargs):
+        for func in self.funcions:
+            func.plot()
 
         bisector = np.linspace(self.xrange[0], self.xrange[1], self.n_points)
         func_result = self.dF(bisector, **self.dF_args)
@@ -85,6 +88,10 @@ class Cobweb:
 
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
 
+
+    def add_funcion(self, funcion1d, *, n_points=500, xRange=None, dF_args=None, color='g'):
+        self.funcions.append(Funcion1D(self, funcion1d, n_points=n_points, xRange=xRange, dF_args=None, color=color))
+        
 
     def update_dF_args(self):
         for name, slider in self.sliders.items():

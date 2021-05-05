@@ -17,7 +17,7 @@ class Funcion1D():
         
     def _compute_values(self):
         try:
-            self.dF_args = self.portrait.dF_args
+            self.dF_args = self.portrait.dF_args.copy()
         except:
             pass
         self._x_values = np.linspace(*(self.xRange), self.n_points)
