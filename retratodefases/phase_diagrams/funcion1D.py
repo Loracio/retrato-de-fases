@@ -16,15 +16,11 @@ class Funcion1D():
             self.dF_args = {}
         
     def _compute_values(self):
-        try:
-            self.dF_args = self.portrait.dF_args.copy()
-        except:
-            pass
         self._x_values = np.linspace(*(self.xRange), self.n_points)
         self._y_values = self.funcion(self._x_values, **self.dF_args)
         
         
-    def plot(self):
+    def plot(self, *, style='-'):
         self._compute_values()
-        self.portrait.ax.plot(self._x_values, self._y_values, '-', color=self.color)
+        self.portrait.ax.plot(self._x_values, self._y_values, style, color=self.color)
         
