@@ -8,7 +8,7 @@ from .sliders import Slider
 from .phase_diagrams import Funcion1D
 
 class Map1D():
-    '''
+    """
     Map1D
     --------
     Class dedicated to 1 dimension maps `x(t+1) = f(x)`.
@@ -31,12 +31,12 @@ class Map1D():
     plot :
         Prepares the plots and computes the values. 
         Returns the axis and the figure.
-    '''
+    """
     
     _name_ = 'Map1D'
 
     def __init__(self, dF, x_range, y_range, n_points, *, composition_grade=1, dF_args={}, Titulo='Mapa 1D', xlabel=r'control parameter', ylabel=r'$X_{n+1}$', **kargs):
-        '''
+        """
         Map1D
         --------
         
@@ -67,7 +67,7 @@ class Map1D():
             Size of the scattered points.
         thermalization : int
             Thermalization steps before points saved.
-        '''
+        """
         
         self.dF_args = dF_args
         self.dF = dF
@@ -116,7 +116,7 @@ class Map1D():
                              limit_cicle_check=self._limit_cicle_check_first, delta=self._delta_cicle_check, save_freq=self.composition_grade)})
 
     def plot_over_variable(self, param_name, valinterval, valstep, *, initial_x=None, limit_cicle_check_first=50, delta_cicle_check=0.0001):
-        '''
+        """
         plot_over_variable : 
         Creates every `map` instance.
     
@@ -137,7 +137,7 @@ class Map1D():
             Number of points saved before checking for repeated elemets.
         delta_cicle_check : float
             Diference between two positions to be considerated identical.
-        '''
+        """
         self._param_name = param_name
         self._valinterval = valinterval
         if initial_x is None:
@@ -165,18 +165,18 @@ class Map1D():
         
 
     def plot(self, *, color=None):
-        '''
+        """
         Prepares the plots and computes the values.
         
         Returns
         -------
-            Tuple(matplotlib Figure, matplotlib Axis)
+        tuple(matplotlib Figure, matplotlib Axis)
         
         Key Arguments
         -------------
         color : str
             Matplotlib `Cmap`.
-        '''
+        """
         for func in self.funcions:
             func.plot()
         
@@ -198,7 +198,7 @@ class Map1D():
     
 
     def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
-        '''
+        """
         Adds a `Slider` for the `dF` funcion.
     
         Parameters
@@ -214,7 +214,7 @@ class Map1D():
             Min and max value for the param range.
         valstep : float
             Separation between consecutive values in the param range.
-        ''' 
+        """ 
         self.sliders.update({param_name: Slider(
             self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
 
@@ -223,7 +223,7 @@ class Map1D():
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
 
     def add_funcion(self, funcion1d, *, n_points=500, xRange=None, dF_args=None, color='g'):
-        '''
+        """
         Adds a funcion to the `dF` plot.
     
         Parameters
@@ -241,7 +241,7 @@ class Map1D():
             If necesary, must contain the kargs for the `dF` funcion.
         color : str 
             String  matplotlib color identifier.
-        ''' 
+        """ 
         self.funcions.append(Funcion1D(self, funcion1d, n_points=n_points, xRange=xRange, dF_args=None, color=color))
         
 
@@ -257,7 +257,7 @@ class Map1D():
 
         
     def plot_trajectory(self, n_points, *, dF_args=None, initial_x=None, color='b', save_freq=1, thermalization=0):
-        '''
+        """
         Creates a `map` instance and computes it's positions.
         
         Returns : `plt.Figure` , `plt.Axis`
@@ -279,7 +279,7 @@ class Map1D():
             Number of times `dF` is aplied before a position is saved.
         thermalization : int
             Thermalization steps before points saved.
-        '''
+        """
         try:
             if self._param_name:
                 pass

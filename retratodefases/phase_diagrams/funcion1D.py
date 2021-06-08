@@ -3,7 +3,7 @@ from scipy.misc import derivative
 import matplotlib.pyplot as plt
 
 class Funcion1D():
-    '''
+    """
     Funcion1D
     --------
     Class dedicated to 1 dimension funcions `y = f(x)`. 
@@ -25,21 +25,21 @@ class Funcion1D():
     plot : 
         Computes the values and plots them.
         Returns : `plt.axis`
-    '''
+    """
     
     def __init__(self, portrait, funcion, *, n_points=500, xRange=None, dF_args=None, color='g'):
-        '''
+        """
         Funcion1D
         --------
         Parameters
         ----------
-        portrait : callable
-            A dF type funcion.
+        portrait : 
+            Class that uses the Funcion1D.
         Range : [x_range, y_range]
             Ranges of the axis in the main plot.
         n_points : int
             Maximum number of points
-        '''
+        """
         self.portrait = portrait
         self.funcion = funcion
         self.n_points = n_points
@@ -52,11 +52,14 @@ class Funcion1D():
             self.dF_args = {}
         
     def compute_values(self):
-        '''
+        """
         Computes the values.
         
-        Returns : `self._x_values, self._y_values`
-        '''
+        Returns
+        -------
+        tuple
+            `self._x_values, self._y_values`
+        """
         self._x_values = np.linspace(*(self.xRange), self.n_points)
         self._y_values = self.funcion(self._x_values, **self.dF_args)
         
@@ -64,10 +67,12 @@ class Funcion1D():
         
         
     def plot(self, *, axis=None, style='-'):
-        '''
+        """
         Computes the values and plots them.
         
-        Returns : `plt.axis`
+        Returns
+        ------- 
+        matplotlib.Axis
         
         Key Arguments
         -----
@@ -75,7 +80,7 @@ class Funcion1D():
             Required if you want to plot the funcion in a specific Axis. By default it takes the axis of the portrait.
         style : str
             A format strings for the curve style. Must be passed as a Key Argument
-        '''
+        """
         if axis is None:
             axis = self.portrait.ax
         
