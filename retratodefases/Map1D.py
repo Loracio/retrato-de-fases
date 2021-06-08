@@ -11,74 +11,64 @@ class Map1D():
     '''
     Map1D
     --------
-    
-    Parameters
-    ----------
-    dF : callable
-        A dF type funcion.
-    Range : [x_range, y_range]
-        Ranges of the axis in the main plot.
-    n_points : int
-        Maximum number of points
-    
-    Key Arguments
-    -----
-    dF_args : dict
-        If necesary, must contain the kargs for the `dF` funcion.
-    composition_grade : int
-        Number of times `dF` is aplied between positions saved.
-    Titulo : str
-        Title of the plot.
-    xlabel : str
-        x label of the plot.
-    ylabel : str
-        y label of the plot.
-    color : str
-        Matplotlib `Cmap`.
-    size : float
-        Size of the scattered points.
-    thermalization : int
-        Thermalization steps before points saved.
+    Class dedicated to 1 dimension maps `x(t+1) = f(x)`.
     
     Methods
     -------
     plot_over_variable : 
         Creates every `map` instance.
-    
-        param_name : str
-            Name of the variable. Must be in the `dF` kargs.
-        valinterval : list
-            Min and max value for the param range.
-        valstep : float
-            Separation between consecutive values in the param range.
             
     plot_trajectory : 
         Creates a `map` instance and computes it's positions.
         Returns : `plt.Figure` , `plt.Axis`
         
-        n_points : int
-            Number of points to be calculated.
-    
     add_funcion : 
         Adds a funcion to the `dF` plot.
     
-        funcion1d : callable
-            A dF type funcion.
-    
     add_slider :
         Adds a `Slider` for the `dF` funcion.
-    
-        param_name : str
-            Name of the variable. Must be in the `dF` kargs of the `Map1D.dF` funcion.
-            
+
     plot :
-        Prepares the plots and computes the values.
-        
+        Prepares the plots and computes the values. 
+        Returns the axis and the figure.
     '''
     
     _name_ = 'Map1D'
 
     def __init__(self, dF, x_range, y_range, n_points, *, composition_grade=1, dF_args={}, Titulo='Mapa 1D', xlabel=r'control parameter', ylabel=r'$X_{n+1}$', **kargs):
+        '''
+        Map1D
+        --------
+        
+        Parameters
+        ----------
+        dF : callable
+            A dF type funcion.
+        Range : [x_range, y_range]
+            Ranges of the axis in the main plot.
+        n_points : int
+            Maximum number of points
+        
+        Key Arguments
+        -----
+        dF_args : dict
+            If necesary, must contain the kargs for the `dF` funcion.
+        composition_grade : int
+            Number of times `dF` is aplied between positions saved.
+        Titulo : str
+            Title of the plot.
+        xlabel : str
+            x label of the plot.
+        ylabel : str
+            y label of the plot.
+        color : str
+            Matplotlib `Cmap`.
+        size : float
+            Size of the scattered points.
+        thermalization : int
+            Thermalization steps before points saved.
+        '''
+        
         self.dF_args = dF_args
         self.dF = dF
         self.Range = np.array([x_range, y_range])
@@ -147,8 +137,6 @@ class Map1D():
             Number of points saved before checking for repeated elemets.
         delta_cicle_check : float
             Diference between two positions to be considerated identical.
-        
-        
         '''
         self._param_name = param_name
         self._valinterval = valinterval
@@ -180,11 +168,14 @@ class Map1D():
         '''
         Prepares the plots and computes the values.
         
+        Returns
+        -------
+            Tuple(matplotlib Figure, matplotlib Axis)
+        
         Key Arguments
         -------------
         color : str
             Matplotlib `Cmap`.
-        
         '''
         for func in self.funcions:
             func.plot()
@@ -202,6 +193,9 @@ class Map1D():
                 range_x, values[0, 1:-1],
                 s=self.size, c=color, cmap=self._cmap, norm=self._colores_norm
             )
+            
+        return self.fig, self.ax
+    
 
     def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
         '''
@@ -220,7 +214,6 @@ class Map1D():
             Min and max value for the param range.
         valstep : float
             Separation between consecutive values in the param range.
-
         ''' 
         self.sliders.update({param_name: Slider(
             self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
