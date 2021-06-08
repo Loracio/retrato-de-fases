@@ -12,14 +12,57 @@ import numpy as np
 
 class RetratoDeFases3D(PhasePortrait):
     """
-    Hace un retrato de fases de un sistema 3D.
+    RetratoDeFases3D
+    ----------------
+    Class dedicated to 3D phase diagrams.
+    
+    Methods
+    -------    
+    norma : 
+        Must convert position and velocity to float representing colour.
+        
+    draw_plot : 
+        Draws the streamplot. Is internaly used by method `plot`.
+    
+    add_slider :
+        Adds a `Slider` for the `dF` funcion.
+
+    plot :
+        Prepares the plots and computes the values. 
+        Returns the axis and the figure.
     """
     _name_ = 'RetratoDeFases3D'
     def __init__(self, dF, RangoRepresentacion, *, LongitudMalla=10, dF_args={}, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = 'Y', zlabel = 'Z', color='rainbow'):
         """
-        Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
-        También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
-        Se le debe pasar obligatoriamente una función que contenga la expresión de las derivadas de los parámetros.
+        PhasePortrait3D
+        ---------------
+        
+        Parameters
+        ----------
+        dF : callable
+            A dF type funcion.
+        RangoRepresentacion : [x_range, y_range]
+            Ranges of the axis in the main plot.
+            
+        Key Arguments
+        -------------
+        LongitudMalla : int, default=10
+            Number of elements in the arrows grid.
+        dF_args : dict
+            If necesary, must contain the kargs for the `dF` funcion.
+        Densidad : float, default=1
+            Number of elements in the arrows grid plot.
+        Polar : bool, default=False
+            Whether to use polar coordinates or not.
+        Titulo : str, default='Titulo' 
+        xlabel : str, default='X'
+            x label of the plot.
+        ylabel : str, default='Y' 
+            y label of the plot.
+        zlabel : str, default='Z' 
+            z label of the plot.
+        color : str, default='rainbow'
+            Matplotlib `Cmap`.
         """
         super().__init__(dF, RangoRepresentacion, 3, MeshDim=LongitudMalla, dF_args=dF_args, Polar=Polar, Title=Titulo, color=color)
         
@@ -36,13 +79,27 @@ class RetratoDeFases3D(PhasePortrait):
         self._XYZ = np.meshgrid(*[np.linspace(*r, l) for r, l in zip(self.Rango, self.L)])
         self._dXYZ = []*3
 
+        # TODO: wtf?
         #* Teóricamente, debería estar arreglado, pero repito, teóricamente. Bueno, es incorrecto por lo que explico en los comentarios de las líneas anteriores, pero sería meterle las componentes de la lista
         if self.Polar:   
             self._R, self._Theta, self._Phi = (self._XYZ[0]**2 + self._XYZ[1]**2 + self._XYZ[2]**2)**0.5, np.arctan2(self._XYZ[1], self._XYZ[0]), np.arctan2(((self._XYZ[0]**2 + self._XYZ[1]**2)**0.5), self._XYZ[2])  # Transformacion de coordenadas cartesianas a esféricas
 
 
     def norma(self):
-        square = lambda x: x*x
+        """
+        Converts position and velocity to float color indicator.
+        
+        Example
+        -------
+        ```
+        def norma(self):
+            result = np.zeros(self.L)
+            for i in self._XYZ:
+                result += i*i
+            return np.sqrt(result)
+        ```
+        """
+        
         result = np.zeros(self.L)
         for i in self._XYZ:
             result += i*i
@@ -50,6 +107,18 @@ class RetratoDeFases3D(PhasePortrait):
 
 
     def draw_plot(self, *, color=None):
+        """
+        Draws the streamplot. Is internaly used by method `plot`.
+        
+        Returns
+        -------
+        matplotlib.Streamplot
+        
+        Key Arguments
+        -------------
+        color : str
+            Matplotlib `Cmap`.
+        """
         if self.Polar:
             self._transformacionEsfericas()
         else:

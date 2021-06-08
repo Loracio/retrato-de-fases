@@ -1,5 +1,5 @@
 import random
-from inspect import signature
+from inspect import Attribute, signature
 
 import matplotlib
 import matplotlib.animation as animation
@@ -15,14 +15,84 @@ from ..utils import utils
 
 class trajectory:
     """
-    Computa una trayectoria en un sistema 2D o 3D.
+    trajectory
+    ----------
+    Base class of trajectory classes: 
+        -Trajectory2D
+        
+        -Trajectory3D
+        
+    Methods
+    -------
+    _prepare_plot :
+        Prepares the plots.
+        
+    _scatter_start_point :
+        Scatter all the start points.
+        
+    _scatter_trajectory :
+        Scatter all the trajectories.
+        
+    _plot_lines :
+        Plots the lines of all the trajectories.
+        
+    _create_sliders_plot :
+        Creates the sliders plot.
+        
+    thermalize : 
+        Adds thermalization steps and random initial position.
+        
+    initial_position :
+        Adds a trajectory with the given initial position.
+        
+    plot : 
+        Prepares the plots and computes the values. 
+        Returns the axis and the figure.
+        
+    add_slider :
+        Adds a `Slider` for the `dF` funcion.
+        
+    _calculate_values : 
+        Computes the trajectories.
     """
     _name_ = 'trajectory'
     def __init__(self, dF, dimension, *, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
         """
-        Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
-        También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
-        Se le debe pasar obligatoriamente una función que contenga la expresión de las derivadas de los parámetros.
+        Map1D
+        --------
+        
+        Parameters
+        ----------
+        dF : callable
+            A dF type funcion.
+        dimension :
+            The number of dimensions in which the trajectory is calculated.
+            Must equal `dF` return lengh.
+        
+        Key Arguments
+        -----
+        RangoRepresentacion : Union[float,list], default=None
+            Range of every coordinate in the graphs.
+        dF_args : dict
+            If necesary, must contain the kargs for the `dF` funcion.
+        n_points : int, default=10000    
+            Number of positions to be saved for every trajectory.
+        runge_kutta_step : float, default=0.1
+            Step of 'time' in the Runge-Kutta method.
+        runge_kutta_freq : int
+            Number of times `dF` is aplied between positions saved.
+        lines : bool
+            Must be `True` if method _plot_lines is used.
+        Titulo : str
+            Title of the plot.
+        color : str
+            Matplotlib `Cmap`.
+        size : float
+            Size of the scattered points.
+        thermalization : int
+            Thermalization steps before points saved.
+        mark_start_point : bool
+            Marks the start position if True.
         """
 
         # Variables obligatorias
@@ -77,11 +147,46 @@ class trajectory:
             self.sliders_ax.set_visible(False)
 
         
-    def termaliza(self):
+    def termaliza(self, *, thermalization_steps=200):
+        """
+        Shortcut to:
+        
+        ```
+        self.thermalization = thermalization_steps
+        self.posicion_inicial()
+        ```
+        """
+        
+        # TODO: actualizar esto en la versión inglesa.
+        if self.thermalization is None:
+            self.thermalization = thermalization_steps
         self.posicion_inicial()
 
 
     def posicion_inicial(self, *args, **kargs):
+        """
+        Adds a initial position for the computation.
+        More than one can be added.
+        
+        Arguments
+        ---------
+        args : Union[float, list[2], list[3]]
+            Inicial position for the computation.
+            If None, a random position is chosen.
+            
+        Example
+        -------
+        This example generates 2 circles with diferent radius. 
+        ```
+        def Circulo(x,y,*, w=1, z=1):
+            return w*y, -z*x
+
+        circle = Trayectoria2D(Circulo, n_points=1300, size=2, mark_start_position=True, Titulo='Just a circle')
+        circle.posicion_inicial(1,1)
+        circle.posicion_inicial(2,2)
+        ```
+        """
+        
         flag = False
         for trajectory in self.trajectories:
             for a, b in zip(args, trajectory.initial_value):
@@ -108,6 +213,21 @@ class trajectory:
 
 
     def plot(self, *args, **kargs):
+        """
+        Prepares the plots and computes the values.
+        
+        Returns
+        -------
+        tuple(matplotlib Figure, matplotlib Axis)
+        
+        None 
+            If attribute `fig` or `ax` not found.
+        
+        Key Arguments
+        -------------
+        color : str
+            Matplotlib `Cmap`.
+        """
         self._prepare_plot()
         self.dF_args.update({name: slider.value for name, slider in self.sliders.items() if slider.value!= None})
         for trajectory in self.trajectories:
@@ -151,12 +271,30 @@ class trajectory:
             self.sliders_fig.canvas.draw_idle()
         except:
             pass
-
+        
+        try:
+            return self.fig, self.ax
+        except AttributeError:
+            return None
 
     def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
         """
-        Añade un slider sobre un plot ya existente.
-        """
+        Adds a `Slider` for the `dF` funcion.
+    
+        Parameters
+        ---------
+        param_name : str
+            Name of the variable. Must be in the `dF` kargs of the `Map1D.dF` funcion.
+        
+        Key Arguments
+        ------------
+        valinit : float, defautl=None
+            Initial position of the Slider
+        valinterval : Union[float,list], default=10
+            Min and max value for the param range.
+        valstep : float, default=0.1
+            Separation between consecutive values in the param range.
+        """ 
         self._create_sliders_plot()
         self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
 

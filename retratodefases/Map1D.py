@@ -208,11 +208,11 @@ class Map1D():
         
         Key Arguments
         ------------
-        valinit : float
+        valinit : float, defautl=None
             Initial position of the Slider
-        valinterval : list
+        valinterval : Union[float,list], default=10
             Min and max value for the param range.
-        valstep : float
+        valstep : float, default=0.1
             Separation between consecutive values in the param range.
         """ 
         self.sliders.update({param_name: Slider(
@@ -233,15 +233,15 @@ class Map1D():
         
         Key Arguments
         ------------
-        n_points : int
+        n_points : int, default=500
             Number of points in the funcion representation.
-        xRange : list
+        xRange : list, default=None
             The x range in which the points are calculated.
-        dF_args : dict
+        dF_args : dict, default=None
             If necesary, must contain the kargs for the `dF` funcion.
-        color : str 
+        color : str, default='g' 
             String  matplotlib color identifier.
-        """ 
+        """
         self.funcions.append(Funcion1D(self, funcion1d, n_points=n_points, xRange=xRange, dF_args=None, color=color))
         
 

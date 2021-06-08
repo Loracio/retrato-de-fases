@@ -12,15 +12,57 @@ import numpy as np
 
 class RetratoDeFases2D(PhasePortrait):
     """
-    Hace un retrato de fases de un sistema 2D.
+    RetratoDeFases2D
+    ----------------
+    Class dedicated to 2D phase diagrams.
+    
+    Methods
+    -------    
+    draw_plot : 
+        Draws the streamplot. Is internaly used by method `plot`.
+        
+    add_funcion : 
+        Adds a funcion to the `dF` plot.
+    
+    add_slider :
+        Adds a `Slider` for the `dF` funcion.
+
+    plot :
+        Prepares the plots and computes the values. 
+        Returns the axis and the figure.
     """
     _name_ = 'RetratoDeFases2D'
     def __init__(self, dF, RangoRepresentacion, *, LongitudMalla=10, dF_args={}, Densidad = 1, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = r"$\dot{X}$", color='rainbow'):
         """
-        Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
-        También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
-        Se le debe pasar obligatoriamente una función que contenga la expresión de las derivadas de los parámetros.
+        PhasePortrait2D
+        ---------------
+        
+        Parameters
+        ----------
+        dF : callable
+            A dF type funcion.
+        RangoRepresentacion : [x_range, y_range]
+            Ranges of the axis in the main plot.
+            
+        Key Arguments
+        -------------
+        LongitudMalla : int, default=10
+            Number of elements in the arrows grid.
+        dF_args : dict
+            If necesary, must contain the kargs for the `dF` funcion.
+        Densidad : float, default=1
+            Number of elements in the arrows grid plot.
+        Polar : bool, default=False
+            Whether to use polar coordinates or not.
+        Titulo : str, default='Titulo' 
+        xlabel : str, default='X'
+            x label of the plot.
+        ylabel : str, default='$\dot{X}$' 
+            y label of the plot.
+        color : str, default='rainbow'
+            Matplotlib `Cmap`.
         """
+        
         super().__init__(dF, RangoRepresentacion, 2, MeshDim=LongitudMalla, dF_args=dF_args, Polar=Polar, Title=Titulo, color=color)
         
         # Variables no obligatorias                                                           # Titulo para el retrato de fases.
@@ -38,15 +80,58 @@ class RetratoDeFases2D(PhasePortrait):
             self._R, self._Theta = (self._X**2 + self._Y**2)**0.5, np.arctan2(self._Y, self._X) # Transformacion de coordenadas cartesianas a polares
 
     def add_funcion(self, funcion1d, *, n_points=500, xRange=None, dF_args=None, color='g'):
+        """
+        Adds a funcion to the `dF` plot.
+    
+        Parameters
+        ---------
+        funcion1d : callable
+            A dF type funcion.
+        
+        Key Arguments
+        ------------
+        n_points : int, default=500
+            Number of points in the funcion representation.
+        xRange : list, default=None
+            The x range in which the points are calculated.
+        dF_args : dict, default=None
+            If necesary, must contain the kargs for the `dF` funcion.
+        color : str, default='g' 
+            String  matplotlib color identifier.
+        """ 
         self.funcions.append(Funcion1D(self, funcion1d, n_points=n_points, xRange=xRange, dF_args=None, color=color))
         
 
     def plot(self, *, color=None):
+        """
+        Prepares the plots and computes the values.
+        
+        Returns
+        -------
+        tuple(matplotlib Figure, matplotlib Axis)
+        
+        Key Arguments
+        -------------
+        color : str
+            Matplotlib `Cmap`.
+        """
         self.draw_plot(color=color)
         self.fig.canvas.draw_idle()
 
 
     def draw_plot(self, *, color=None):
+        """
+        Draws the streamplot. Is internaly used by method `plot`.
+        
+        Returns
+        -------
+        matplotlib.Streamplot
+        
+        Key Arguments
+        -------------
+        color : str
+            Matplotlib `Cmap`.
+        """
         super().draw_plot()
         
         if self.Polar:
