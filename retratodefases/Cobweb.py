@@ -1,4 +1,5 @@
 from inspect import signature
+from retratodefases import phase_diagrams
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,13 +7,62 @@ import numpy as np
 from .sliders import sliders
 from .exceptions import exceptions
 from .utils import utils
+from .phase_diagrams import Funcion1D
 
 
 class Cobweb:
+    '''
+    Cobweb
+    ------
+    Class dedicated cobweb plots of 1 dimension maps `x(t+1) = f(x)`.
+    
+    Methods
+    -------
+    plot :
+        Prepares the plots, compute the values, and plots them. 
+        Returns the axis and the figure.
+        
+    add_slider :
+        Adds a `Slider` for the `dF` funcion.
+        
+    initial_position_slider :
+        Adds a slider for changing the initial value.
+        
+    add_funcion : 
+        Adds a funcion to the Cobweb plot.
+    '''
 
     _name_ = 'Cobweb'
-    def __init__(self, dF, initial_position, xrange, *, dF_args={None}, yrange=[], max_steps=100, n_points=10000, **kargs):
-        
+    def __init__(self, dF, initial_position, xrange, *, dF_args={None}, yrange=[], max_steps=100, n_points=100, **kargs):
+        '''
+        Cobweb
+        ------
+        Parameters
+        ----------
+        dF : callable
+            A dF type funcion.
+        initial_position : float
+            Initial x of the iteration.
+        xrange : list
+            Range of the x axis in the main plot.
+            
+        Key Arguments
+        -------------
+        dF_args : dict
+            If necesary, must contain the kargs for the `dF` funcion.
+        yrange : list
+            Range of the y axis in the main plot
+        max_steps : int
+            Maximun number of poits to be represented.
+        n_points : int
+            Number of points in the bisector. 
+        Title : str
+            Title of the plot.
+        xlabel : str
+            x label of the plot.
+        ylabel : str
+            y label of the plot.
+        '''
         self.dF = dF
         self.dF_args = dF_args
         self.initial_position = initial_position 
@@ -49,6 +99,13 @@ class Cobweb:
 
 
     def plot(self, *args, **kargs):
+        '''
+        Prepares the plots, compute the values and plots them.
+        
+        Returns
+        -------
+            Tuple(matplotlib Figure, matplotlib Axis)
+        '''
         for func in self.funcions:
             func.plot()
 
@@ -72,16 +129,31 @@ class Cobweb:
             if y>self.xrange[1] or y<self.xrange[0]:
                 print(f'Warning: cobweb plot got out of range and could not compute {self.max_steps} steps.')
                 break
-
-
+            
         self.fig.canvas.draw_idle()
+        
+        return self.fig, self.ax
 
 
 
     def add_slider(self, param_name, *, valinit=None, valstep=0.1, valinterval=10):
-        """
-        Adds a slider on an existing plot
-        """
+        '''
+        Adds a slider on an existing plot.
+        
+        Parameters
+        ----------
+        param_name : str
+            The string key of the variable. Must be the same as the key in the `dF` funcion.
+        
+        Key Arguments
+        -------------
+        valinit : float
+            Initial value of the parameter.
+        valinterval : Union[float, list]
+            The range of values the slider of the parameter will cover.
+        valstep : float
+            Precision in the slider.
+        '''
         self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
 
         self.fig.subplots_adjust(bottom=0.25)
@@ -90,6 +162,25 @@ class Cobweb:
 
 
     def add_funcion(self, funcion1d, *, n_points=500, xRange=None, dF_args=None, color='g'):
+        '''
+        Adds a funcion to the cobweb plot.
+    
+        Parameters
+        ---------
+        funcion1d : callable
+            A dF type funcion.
+        
+        Key Arguments
+        ------------
+        n_points : int
+            Number of points in the funcion representation.
+        xRange : list
+            The x range in which the points are calculated.
+        dF_args : dict
+            If necesary, must contain the kargs for the `dF` funcion.
+        color : str 
+            String  matplotlib color identifier.
+        ''' 
         self.funcions.append(Funcion1D(self, funcion1d, n_points=n_points, xRange=xRange, dF_args=None, color=color))
         
 
@@ -102,9 +193,16 @@ class Cobweb:
             self.initial_position = self.sliders[r'$x_0$'].value
 
     def initial_position_slider(self, *, valstep=0.05, valinterval=[0,1]):
-        """
-        Adds a slider for changing initial value on a cobweb plot
-        """
+        '''
+        Adds a slider for changing initial value on a cobweb plot.
+        
+        Key Arguments
+        -------------
+        valinterval : Union[float, list]
+            The range of values the slider of the parameter will cover.
+        valstep : float
+            Precision in the slider.
+        '''
         self.sliders.update({r'$x_0$': sliders.Slider(self, r'$x_0$', valinit=self.initial_position, valstep=valstep, valinterval=valinterval)})
 
         self.fig.subplots_adjust(bottom=0.25)
