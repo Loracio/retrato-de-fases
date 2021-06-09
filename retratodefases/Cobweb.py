@@ -1,13 +1,12 @@
 from inspect import signature
-from retratodefases import phase_diagrams
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .sliders import sliders
 from .exceptions import exceptions
-from .utils import utils
 from .phase_diagrams import Funcion1D
+from .sliders import sliders
+from .utils import utils
 
 
 class Cobweb:

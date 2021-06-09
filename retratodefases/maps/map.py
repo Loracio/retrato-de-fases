@@ -1,13 +1,20 @@
-from random import random
-
 import numpy as np
 
-from ..exceptions import exceptions
 from ..generators_base import _Generator_
-from ..utils import utils
 
 
 class Map(_Generator_):
+    """
+    Map
+    -------
+    Base class of map classes:
+        -Map1D
+        
+    Methods
+    --------
+
+    
+    """
     def __init__(self, portrait, dF, dimension, max_values, *, dF_args=None, initial_values=None, thermalization=0, **kargs):
         super().__init__(portrait, dF, dimension, max_values, dF_args=dF_args,
                          initial_values=initial_values, thermalization=thermalization, **kargs)

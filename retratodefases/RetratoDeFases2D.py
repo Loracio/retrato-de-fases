@@ -1,14 +1,9 @@
-from inspect import signature
-
-from .exceptions import exceptions
-from .sliders import sliders
-from .utils import utils
-
-from .phase_diagrams import PhasePortrait, Funcion1D
 import matplotlib
 import matplotlib.pyplot as plt
-
 import numpy as np
+
+from .phase_diagrams import Funcion1D, PhasePortrait
+
 
 class RetratoDeFases2D(PhasePortrait):
     """

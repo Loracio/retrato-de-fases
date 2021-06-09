@@ -1,16 +1,12 @@
-import random
-from inspect import Attribute, signature
+from inspect import signature
 
-import matplotlib
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import cm
 
-from ..sliders import sliders
-from . import RungeKutta
 from ..exceptions import exceptions
+from ..sliders import sliders
 from ..utils import utils
+from . import RungeKutta
 
 
 class trajectory:
@@ -56,10 +52,9 @@ class trajectory:
         Computes the trajectories.
     """
     _name_ = 'trajectory'
+    
     def __init__(self, dF, dimension, *, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
-        """
-        Map1D
-        --------
+        """Creates an instance of trajectory
         
         Parameters
         ----------
@@ -148,6 +143,7 @@ class trajectory:
 
         
     def termaliza(self, *, thermalization_steps=200):
+        
         """
         Shortcut to:
         
@@ -170,7 +166,7 @@ class trajectory:
         
         Arguments
         ---------
-        args : Union[float, list[2], list[3]]
+        args : Union[float, list[2], list[3]], optional
             Inicial position for the computation.
             If None, a random position is chosen.
             

@@ -1,14 +1,9 @@
-from inspect import signature
-
-from .exceptions import exceptions
-from .sliders import sliders
-from .utils import utils
+import matplotlib.pyplot as plt
+import numpy as np
 
 from .phase_diagrams import PhasePortrait
-#import matplotlib
-import matplotlib.pyplot as plt
+from .utils import utils
 
-import numpy as np
 
 class RetratoDeFases3D(PhasePortrait):
     """
@@ -32,6 +27,7 @@ class RetratoDeFases3D(PhasePortrait):
         Returns the axis and the figure.
     """
     _name_ = 'RetratoDeFases3D'
+    
     def __init__(self, dF, RangoRepresentacion, *, LongitudMalla=10, dF_args={}, Polar = False, Titulo = 'Retrato de Fases', xlabel = 'X', ylabel = 'Y', zlabel = 'Z', color='rainbow'):
         """
         PhasePortrait3D
@@ -112,7 +108,7 @@ class RetratoDeFases3D(PhasePortrait):
         
         Returns
         -------
-        matplotlib.Streamplot
+        matplotlib.StreamplotSet
         
         Key Arguments
         -------------

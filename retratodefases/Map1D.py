@@ -1,11 +1,11 @@
-from inspect import Attribute
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 
 from .maps import Map
-from .sliders import Slider
 from .phase_diagrams import Funcion1D
+from .sliders import Slider
+
 
 class Map1D():
     """

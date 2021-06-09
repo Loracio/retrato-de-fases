@@ -1,25 +1,69 @@
-#import random
-#from inspect import signature
-#
-#import matplotlib
-#import matplotlib.animation as animation
 import matplotlib.pyplot as plt
-#import numpy as np
-#from matplotlib import cm
 
 from .trajectories import trajectory
  
 
 class Trayectoria3D(trajectory):
     """
-    Computa una trayectoria en un sistema 3D.
-    """
+    Trajectory3D
+    ----------
+    Class dedicated to compute and represent trajectories in 2D.
+        
+    Methods
+    -------
+    thermalize : 
+        Adds thermalization steps and random initial position.
+        
+    initial_position :
+        Adds a trajectory with the given initial position.
+        
+    plot : 
+        Prepares the plots and computes the values. 
+        Returns the axis and the figure.
+        
+    add_slider :
+        Adds a `Slider` for the `dF` funcion.
+        
+    _prepare_plot :
+        Prepares the plots.
+        
+    _scatter_start_point :
+        Scatter all the start points.
+        
+    _scatter_trajectory :
+        Scatter all the trajectories.
+        
+    _plot_lines :
+        Plots the lines of all the trajectories.
+        
+    _create_sliders_plot :
+        Creates the sliders plot.
+    """ 
     _name_ = 'Trayectoria3D'
+    
     def __init__(self, dF, *, RangoRepresentacion=None, dF_args={}, n_points=10000, runge_kutta_step=0.01, runge_kutta_freq=1, **kargs):
-        """
-        Inicializador de clase: inicializa las variables de la clase a los valores pasados. 
-        También se definen las variables que se emplean internamente en la clase para realizar el diagrama.
-        Se le debe pasar obligatoriamente una función que contenga la expresión de las derivadas de los parámetros.
+        """Creates an instance of Trajectory3D
+
+        Parameters
+        ----------
+        dF : callable
+            A `dF` type funcion.
+        RangoRepresentacion : list, optional
+            Ranges of the axis in the main plot, by default None
+        dF_args : dict, optional
+            If necesary, must contain the kargs for the `dF` funcion, by default {}
+        n_points : int, optional
+            Maximum number of points to be calculated and represented, by default 10000
+        runge_kutta_step : float, optional
+            Step of 'time' in the Runge-Kutta method, by default 0.01
+        runge_kutta_freq : int, optional
+            Number of times `dF` is aplied between positions saved, by default 1
+        xlabel : str, optional
+            x label of the plot, by default 'X'
+        ylabel : str, optional
+            y label of the plot, by default 'Y'
+        zlabel : str, optional
+            z label of the plot, by default 'Z'
         """
         super().__init__(dF, 3, RangoRepresentacion=RangoRepresentacion, dF_args=dF_args, n_points=n_points, runge_kutta_step=runge_kutta_step, runge_kutta_freq=runge_kutta_freq, **kargs)
 
