@@ -1,6 +1,4 @@
 import numpy as np
-from scipy.misc import derivative
-import matplotlib.pyplot as plt
 
 class Funcion1D():
     """

@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .phase_diagrams import Funcion1D, PhasePortrait
+from .phase_diagrams import Funcion1D, PhasePortrait, Nullcline2D
 
 
 class RetratoDeFases2D(PhasePortrait):
@@ -67,6 +67,7 @@ class RetratoDeFases2D(PhasePortrait):
         # Variables para la representación
         self.fig, self.ax = plt.subplots()
         self.funcions = []
+        self.nullclines = []
 
         # Variables que el usuario no debe emplear: son para el tratamiento interno de la clase. Es por ello que llevan el prefijo "_"
         self._X, self._Y = np.meshgrid(np.linspace(*self.Range[0,:], self.L), np.linspace(*self.Range[1,:], self.L))   #Crea una malla de tamaño L²
@@ -113,6 +114,13 @@ class RetratoDeFases2D(PhasePortrait):
         self.draw_plot(color=color)
         self.fig.canvas.draw_idle()
 
+
+    def add_nullclines(self, *, precision=0.01, offset=0, density=50, xRange=None, yRange=None, dF_args=None, xcolor='r', ycolor='g', bgcolor='w', alpha=0):
+        self.nullclines.append(Nullcline2D(self, self.dF, 
+                                          precision=precision, offset=offset, density=density, 
+                                          xRange=xRange, yRange=yRange, dF_args=dF_args, 
+                                          xcolor=xcolor, ycolor=ycolor, bgcolor=bgcolor, alpha=alpha))
+        
 
     def draw_plot(self, *, color=None):
         """

@@ -42,6 +42,12 @@ class PhasePortrait:
                 func.plot()
         except AttributeError:
             pass
+        
+        try:
+            for nullcline in self.nullclines:
+                nullcline.plot()
+        except AttributeError:
+            pass
             
             
     def plot(self, *, color=None):
