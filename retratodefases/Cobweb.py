@@ -75,25 +75,44 @@ class Cobweb:
         self.xlabel = kargs['xlabel'] if kargs.get('xlabel') else r'$X_n$'
         self.ylabel = kargs['ylabel'] if kargs.get('ylabel') else r'$X_{n+1}$'
 
-        self.fig, self.ax = plt.subplots()
+        figCobweb, axCobweb = plt.subplots()
+        figTimeSeries, axTimeSeries = plt.subplots()
+
+        self.fig = {
+            'Cobweb': figCobweb,
+            'TimeSeries': figTimeSeries
+        }
+        self.ax = {
+            'Cobweb': axCobweb,
+            'TimeSeries': axTimeSeries
+        }
+
         self.sliders = {}
-        self.funcions = []
         self.sliders_fig = False
 
+        self.funcions = []
 
 
-    def _prepare_plot(self, max_value):
 
-        self.ax.set_title(self.Title)
-        self.ax.set_xlabel(self.xlabel)
-        self.ax.set_ylabel(self.ylabel)
+    def _prepare_plot(self, min_value, max_value):
+
+        self.ax['Cobweb'].set_title(self.Title)
+        self.ax['Cobweb'].set_xlabel(self.xlabel)
+        self.ax['Cobweb'].set_ylabel(self.ylabel)
 
         if self.yrange==[]:
-            self.ax.set_ylim(top=1.10*max_value)
+            self.ax['Cobweb'].set_ylim(bottom= 1.10*min_value,top=1.10*max_value)
         else:
-            self.ax.set_ylim(self.yrange)
+            self.ax['Cobweb'].set_ylim(self.yrange)
 
-        self.ax.grid()
+        self.ax['Cobweb'].grid()
+
+        self.ax['TimeSeries'].set_title('Time Series')
+        self.ax['TimeSeries'].set_ylabel(r'$x_t$')
+        self.ax['TimeSeries'].set_xlabel('t')
+        self.ax['TimeSeries'].set_ylim(self.xrange)
+        self.ax['TimeSeries'].grid()
+
     
 
 
@@ -103,35 +122,47 @@ class Cobweb:
         
         Returns
         -------
-        tuple(matplotlib Figure, matplotlib Axis)
+        tuple(matplotlib Figure (Cobweb plot), matplotlib Axis (Cobweb plot), matplotlib Figure (Time series), matplotlib Axis (Time series))
         """
-        for func in self.funcions:
-            func.plot()
-
         bisector = np.linspace(self.xrange[0], self.xrange[1], self.n_points)
         func_result = self.dF(bisector, **self.dF_args)
 
-        self._prepare_plot(np.max(func_result))
+        xTimeSeries = []
+        yTimeSeries = []
 
-        self.ax.plot(bisector, func_result, 'b')
-        self.ax.plot(bisector, bisector, "k:")
+        self._prepare_plot(np.min(func_result), np.max(func_result))
+
+        self.ax['Cobweb'].plot(bisector, func_result, 'b')
+        self.ax['Cobweb'].plot(bisector, bisector, "k:")
 
         x, y = self.initial_position, self.dF(self.initial_position, **self.dF_args)
-        self.ax.plot([x, x], [0, y], 'black')
+        self.ax['Cobweb'].plot([x, x], [0, y], 'k:')
+        self.ax['Cobweb'].scatter(x , 0, color='green')
 
-        for _ in range(self.max_steps):
+        xTimeSeries.append(0)
+        yTimeSeries.append(x)
 
-            self.ax.plot([x, y], [y, y], 'black')
-            self.ax.plot([y, y], [y, self.dF(y, **self.dF_args)], 'black')
+        for i in range(self.max_steps):
+
+            self.ax['Cobweb'].plot([x, y], [y, y], 'k:')
+            self.ax['Cobweb'].plot([y, y], [y, self.dF(y, **self.dF_args)], 'k:')
+
             x, y = y, self.dF(y, **self.dF_args)
+
+            xTimeSeries.append(i)
+            yTimeSeries.append(x)
 
             if y>self.xrange[1] or y<self.xrange[0]:
                 print(f'Warning: cobweb plot got out of range and could not compute {self.max_steps} steps.')
                 break
-            
-        self.fig.canvas.draw_idle()
         
-        return self.fig, self.ax
+        self.ax['TimeSeries'].scatter(xTimeSeries , yTimeSeries, color='black', s=10)
+        self.ax['TimeSeries'].plot(xTimeSeries , yTimeSeries, 'k:')
+
+        self.fig['Cobweb'].canvas.draw_idle()
+        self.fig['TimeSeries'].canvas.draw_idle()
+        
+        return self.fig['Cobweb'], self.ax['Cobweb'], self.fig['TimeSeries'],  self.ax['TimeSeries']
 
 
 
@@ -153,11 +184,20 @@ class Cobweb:
         valstep : float
             Precision in the slider.
         """
+        self._create_sliders_plot()
+
         self.sliders.update({param_name: sliders.Slider(self, param_name, valinit=valinit, valstep=valstep, valinterval=valinterval)})
 
-        self.fig.subplots_adjust(bottom=0.25)
-
         self.sliders[param_name].slider.on_changed(self.sliders[param_name])
+
+
+    def _create_sliders_plot(self):
+        """
+        Internally used method. Checks if there is already a sliders plot. If not, it creates it.
+        """
+        if not isinstance(self.sliders_fig, plt.Figure):
+            self.sliders_fig, self.sliders_ax = plt.subplots() 
+            self.sliders_ax.set_visible(False)
 
 
     def add_funcion(self, funcion1d, *, n_points=500, xRange=None, dF_args=None, color='g'):
@@ -191,7 +231,7 @@ class Cobweb:
         if self.sliders.get(r'$x_0$'):
             self.initial_position = self.sliders[r'$x_0$'].value
 
-    def initial_position_slider(self, *, valstep=0.05, valinterval=[0,1]):
+    def initial_position_slider(self, *, valinit=None, valstep=0.05, valinterval=None):
         """
         Adds a slider for changing initial value on a cobweb plot.
         
@@ -202,14 +242,15 @@ class Cobweb:
         valstep : float
             Precision in the slider.
         """
-        self.sliders.update({r'$x_0$': sliders.Slider(self, r'$x_0$', valinit=self.initial_position, valstep=valstep, valinterval=valinterval)})
+        if valinit is None:
+            valinit = self.initial_position
 
-        self.fig.subplots_adjust(bottom=0.25)
+        if valinterval is None:
+            valinterval = list(self.xrange)
+        
+        self.add_slider(r'$x_0$', valinit=valinit, valstep=valstep, valinterval=valinterval)
 
-        self.sliders[r'$x_0$'].slider.on_changed(self.sliders[r'$x_0$'])
 
-
-    # Funciones para asegurarse que los parametros introducidos son válidos
     @property
     def dF(self):
         return self._dF
@@ -223,6 +264,7 @@ class Cobweb:
         except ValueError:
             pass
         self._dF = func
+
 
     @property
     def xrange(self):
@@ -241,8 +283,8 @@ class Cobweb:
 
     @yrange.setter
     def yrange(self, value):
-        if value == None:
-            self._yrange = None
+        if value == []:
+            self._yrange = []
             return
         self._yrange = np.array(utils.construct_interval(value, dim=1))
 
@@ -256,3 +298,4 @@ class Cobweb:
             if not isinstance(value, dict):
                 raise exceptions.dF_argsInvalid(value)
         self._dF_args = value
+

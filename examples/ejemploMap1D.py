@@ -1,4 +1,5 @@
 from retratodefases import Map1D
+from retratodefases import Cobweb
 from matplotlib import pyplot as plt
 
 def Logistic(x, *, r=1.5):
@@ -25,6 +26,12 @@ f, ax = Logistic_Map.plot()
 
 # Disable the grid, because again, example.
 ax.grid()
+
+# Cobweb plot and time series.
+LogisticCobweb = Cobweb(Logistic, 0.2, [0,1], dF_args={'r':1.5}, yrange=[0,1])
+LogisticCobweb.add_slider('r', valinit=1.5, valinterval=[0,4])
+LogisticCobweb.initial_position_slider(valstep=0.01)
+LogisticCobweb.plot()
 
 # Show the plots.
 plt.show()
