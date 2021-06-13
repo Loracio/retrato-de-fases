@@ -101,6 +101,8 @@ class Map1D():
         self.thermalization = kargs.get('thermalization')
         
         self._initial_x = sum(self.Range[1])/2
+        
+        self._prepare_plot()
 
     def _compute_data(self):
         self._range = np.arange(
@@ -140,12 +142,14 @@ class Map1D():
         """
         self._param_name = param_name
         self._valinterval = valinterval
+        
         if initial_x is None:
             initial_x = self._initial_x
+        self._initial_x = initial_x
+        
         self._valstep = valstep
         self._limit_cicle_check_first = limit_cicle_check_first
         self._delta_cicle_check = delta_cicle_check
-        self._prepare_plot()
 
     def _prepare_plot(self):
         self.ax.set_title(f'{self.Titulo}')
@@ -180,6 +184,7 @@ class Map1D():
         for func in self.funcions:
             func.plot()
         
+        self.update_dF_args()
         self._compute_data()
 
         if color is not None:

@@ -62,6 +62,11 @@ class Slider():
 
         if 'RetratoDeFases' in self.portrait._name_:
             self.ax = self.portrait.fig.add_axes([0.25, 0.015 + 0.05*len(self.portrait.sliders), 0.4, 0.03])
+            
+        if 'Map1D' in self.portrait._name_:
+            self.ax = self.portrait.fig.add_axes([0.25, 0.015 + 0.05*len(self.portrait.sliders), 0.4, 0.03])
+            
+        # TODO: Añadir el resto
         
         aux = {'valinit':valinit} if isinstance(self.value, (int, float)) else {}
         self.slider = matplot_slider(self.ax, self.param_name, *valinterval, valstep=valstep, **aux)
